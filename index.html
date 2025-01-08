@@ -91,18 +91,18 @@
     <link href="css/style.css" rel="stylesheet">
 
     <style>
-        .slider-container {
-            width: 80%;
-            max-width: 1000px;
-            overflow: hidden;
+         .slider-container {
+            width: 100%;
+            max-width: 1400px;
             position: relative;
+            align-self: center;
         }
         .slider {
             display: flex;
             transition: transform 0.5s ease-in-out;
         }
         .slide {
-            width:40%;
+            min-width: 30%;
             box-sizing: border-box;
             padding: 20px;
         }
@@ -189,64 +189,70 @@
                     <div class="row g-5">
                         <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
                             <div class="section-title position-relative mb-4 pb-2">
-                                <h6 class="position-relative text-primary ps-4">About Us</h6>
+                                <h6 class="position-relative text-primary ps-4">Why Choose SkillPloy?</h6>
                                 <h2 class="mt-2">The best SEO solution with 10 years of experience</h2>
                             </div>
-                            <p class="mb-4">Tempor erat elitr rebum at clita. Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore. Clita erat ipsum et lorem et sit, sed stet no labore lorem sit. Sanctus clita duo justo et tempor eirmod magna dolore erat amet</p>
+                            <p class="mb-4">SkillPloy bridges the gap between fresh graduates and industry by connecting talent with skill-based job opportunities. </p>
                             <div class="row g-3">
                                 <div class="col-sm-6">
-                                    <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Award Winning</h6>
-                                    <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Professional Staff</h6>
+                                    <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Bridging Industry and Education</h6>
+                                    <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Tailored Job Matching</h6>
                                 </div>
                                 <div class="col-sm-6">
-                                    <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>24/7 Support</h6>
-                                    <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Fair Prices</h6>
+                                    <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>More Job opportunities</h6>
+                                    <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Align Market Demand</h6>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center mt-4">
                                 <a class="btn btn-primary rounded-pill px-4 me-3" href="">Read More</a>
-                                <a class="btn btn-outline-primary btn-square me-3" href=""><i class="fab fa-facebook-f"></i></a>
-                                <a class="btn btn-outline-primary btn-square me-3" href=""><i class="fab fa-twitter"></i></a>
-                                <a class="btn btn-outline-primary btn-square me-3" href=""><i class="fab fa-instagram"></i></a>
-                                <a class="btn btn-outline-primary btn-square" href=""><i class="fab fa-linkedin-in"></i></a>
                             </div>
                         </div>
                         <div class="col-lg-6">
-                            <img class="img-fluid wow zoomIn" data-wow-delay="0.5s" src="img/about.jpg">
+                            <img class="img-fluid wow zoomIn" data-wow-delay="0.5s" src="img/about.png">
                         </div>
                     </div>
                 </div>
             </div>
             <!-- About End -->
-            <div class="slider-container">
-                <button class="slider-btn prev" onclick="moveSlide(-1)">&lt;</button>
-                <div class="slider" id="slider">
-                    <div class="slide" onclick="downloadPDF('https://platform.mdec.com.my/cmscdn/v1.aspx?GUID=471894fc-e838-4568-ac9c-6d6f09b836bd&file=Digital%20Pulse%2015%20-%20Jul%202023.pdf')">
-                        <div class="card">
-                            <img src="https://mdec.outsystemsenterprise.com/S3APIGateway/rest/GetPublicFileURL/GetPublicURLByFileGUID?GUID=0dfb46ab-365e-4d3e-8e83-6beac9303640" alt="Digital Pulse Issue #15">
-                            <h3>Digital Pulse Issue #15</h3>
-                            <p>Deloitte’s SEA Regional Capability Centre: Powering Professional Services Regionally</p>
-                        </div>
-                    </div>
-                    <div class="slide" onclick="downloadPDF('https://platform.mdec.com.my/cmscdn/v1.aspx?GUID=7589163e-3804-4caf-be0d-73e40dbab6ea&file=Digital%20Pulse%2016.pdf')">
-                        <div class="card">
-                            <img src="https://mdec.outsystemsenterprise.com/S3APIGateway/rest/GetPublicFileURL/GetPublicURLByFileGUID?GUID=45b30c5a-4b4b-48e4-929f-70e292aee885" alt="Digital Pulse Issue #16">
-                            <h3>Digital Pulse Issue #16</h3>
-                            <p>Malaysia's Rise as a Generative AI Powerhouse</p>
-                        </div>
-                    </div>
-                    <div class="slide" onclick="downloadPDF('https://platform.mdec.com.my/cmscdn/v1.aspx?GUID=e6e321d5-f774-4156-928d-d15b37d4d5f2&file=Digital%20Pulse%2017.pdf')">
-                        <div class="card">
-                            <img src="https://mdec.outsystemsenterprise.com/S3APIGateway/rest/GetPublicFileURL/GetPublicURLByFileGUID?GUID=d3f02d23-5ab4-4c73-8ac1-a1e787f3dd68" alt="Digital Pulse Issue #17">
-                            <h3>Digital Pulse Issue #17</h3>
-                            <p>AIA Digital+ Malaysia Achieves Sevenfold Workforce Growth</p>
-                        </div>
-                    </div>
-                </div>
-                <button class="slider-btn next" onclick="moveSlide(1)">&gt;</button>
+            <div class="section-title position-relative text-center mb-5 pb-2 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="position-relative d-inline text-primary ps-4">Latest Updates</h6>
+                <h2 class="mt-2">Newsletter from Tech Industry</h2>
             </div>
+
+            <div class="slider-container">
+                <div class="slider" id="slider"></div>
+            </div>
+                    <script type="module">
+                            import { db } from "../firebase-config.js";
+    import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+                
+                async function fetchNewsletters() {
+                    const querySnapshot = await getDocs(collection(db, "Newsletters"));
+                    const slider = document.getElementById('slider');
+                    slider.innerHTML = '';
         
-            <script>
+                    querySnapshot.forEach((doc) => {
+                        const newsletter = doc.data();
+                        const slide = document.createElement('div');
+                        slide.classList.add('slide');
+                        slide.onclick = () => downloadPDF(newsletter.link);
+                        slide.innerHTML = `
+                            <div class="card">
+                                <img src="${newsletter.image}" alt="${newsletter.title}">
+                                <h3>${newsletter.title}</h3>
+                                <p>${newsletter.description}</p>
+                            </div>
+                        `;
+                        slider.appendChild(slide);
+                    });
+                }
+        
+                window.onload = fetchNewsletters;
+        
+                function downloadPDF(url) {
+                    window.open(url, '_blank');
+                }
+        
                 let slideIndex = 0;
         
                 function moveSlide(n) {
@@ -254,19 +260,15 @@
                     slideIndex = (slideIndex + n + slides.length) % slides.length;
                     document.getElementById('slider').style.transform = `translateX(${-slideIndex * 100}%)`;
                 }
-        
-                function downloadPDF(url) {
-                    window.open(url, '_blank');
-                }
             </script>
-    
+            
             <!-- Newsletter Start -->
             <div class="container-xxl bg-primary newsletter my-5 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="container px-lg-5">
                     <div class="row align-items-center" style="height: 250px;">
                         <div class="col-12 col-md-6">
                             <h3 class="text-white">Ready to get started</h3>
-                            <small class="text-white">Diam elitr est dolore at sanctus nonumy.</small>
+                            <small class="text-white">Subscribe us to understand latest industry trends.</small>
                             <div class="position-relative w-100 mt-3">
                                 <input class="form-control border-0 rounded-pill w-100 ps-4 pe-5" type="text" placeholder="Enter Your Email" style="height: 48px;">
                                 <button type="button" class="btn shadow-none position-absolute top-0 end-0 mt-1 me-2"><i class="fa fa-paper-plane text-primary fs-4"></i></button>
@@ -285,7 +287,7 @@
             <div class="container-xxl py-5">
                 <div class="container px-lg-5">
                     <div class="section-title position-relative text-center mb-5 pb-2 wow fadeInUp" data-wow-delay="0.1s">
-                        <h6 class="position-relative d-inline text-primary ps-4">Our Services</h6>
+                        <h6 class="position-relative d-inline text-primary ps-4">SkillPloy</h6>
                         <h2 class="mt-2">What Solutions We Provide</h2>
                     </div>
                     <div class="row g-4">
@@ -356,151 +358,60 @@
     
     
             <!-- Portfolio Start -->
-            <div class="container-xxl py-5">
-                <div class="container px-lg-5">
-                    <div class="section-title position-relative text-center mb-5 pb-2 wow fadeInUp" data-wow-delay="0.1s">
-                        <h6 class="position-relative d-inline text-primary ps-4">Our Projects</h6>
-                        <h2 class="mt-2">Recently Launched Projects</h2>
-                    </div>
-                    <div class="row mt-n2 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="col-12 text-center">
-                            <ul class="list-inline mb-5" id="portfolio-flters">
-                                <li class="btn px-3 pe-4 active" data-filter="*">All</li>
-                                <li class="btn px-3 pe-4" data-filter=".first">Design</li>
-                                <li class="btn px-3 pe-4" data-filter=".second">Development</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="row g-4 portfolio-container">
-                        <div class="col-lg-4 col-md-6 portfolio-item first wow zoomIn" data-wow-delay="0.1s">
-                            <div class="position-relative rounded overflow-hidden">
-                                <img class="img-fluid w-100" src="img/portfolio-1.jpg" alt="">
-                                <div class="portfolio-overlay">
-                                    <a class="btn btn-light" href="img/portfolio-1.jpg" data-lightbox="portfolio"><i class="fa fa-plus fa-2x text-primary"></i></a>
-                                    <div class="mt-auto">
-                                        <small class="text-white"><i class="fa fa-folder me-2"></i>Web Design</small>
-                                        <a class="h5 d-block text-white mt-1 mb-0" href="">Project Name</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 portfolio-item second wow zoomIn" data-wow-delay="0.3s">
-                            <div class="position-relative rounded overflow-hidden">
-                                <img class="img-fluid w-100" src="img/portfolio-2.jpg" alt="">
-                                <div class="portfolio-overlay">
-                                    <a class="btn btn-light" href="img/portfolio-2.jpg" data-lightbox="portfolio"><i class="fa fa-plus fa-2x text-primary"></i></a>
-                                    <div class="mt-auto">
-                                        <small class="text-white"><i class="fa fa-folder me-2"></i>Web Design</small>
-                                        <a class="h5 d-block text-white mt-1 mb-0" href="">Project Name</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 portfolio-item first wow zoomIn" data-wow-delay="0.6s">
-                            <div class="position-relative rounded overflow-hidden">
-                                <img class="img-fluid w-100" src="img/portfolio-3.jpg" alt="">
-                                <div class="portfolio-overlay">
-                                    <a class="btn btn-light" href="img/portfolio-3.jpg" data-lightbox="portfolio"><i class="fa fa-plus fa-2x text-primary"></i></a>
-                                    <div class="mt-auto">
-                                        <small class="text-white"><i class="fa fa-folder me-2"></i>Web Design</small>
-                                        <a class="h5 d-block text-white mt-1 mb-0" href="">Project Name</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 portfolio-item second wow zoomIn" data-wow-delay="0.1s">
-                            <div class="position-relative rounded overflow-hidden">
-                                <img class="img-fluid w-100" src="img/portfolio-4.jpg" alt="">
-                                <div class="portfolio-overlay">
-                                    <a class="btn btn-light" href="img/portfolio-4.jpg" data-lightbox="portfolio"><i class="fa fa-plus fa-2x text-primary"></i></a>
-                                    <div class="mt-auto">
-                                        <small class="text-white"><i class="fa fa-folder me-2"></i>Web Design</small>
-                                        <a class="h5 d-block text-white mt-1 mb-0" href="">Project Name</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 portfolio-item first wow zoomIn" data-wow-delay="0.3s">
-                            <div class="position-relative rounded overflow-hidden">
-                                <img class="img-fluid w-100" src="img/portfolio-5.jpg" alt="">
-                                <div class="portfolio-overlay">
-                                    <a class="btn btn-light" href="img/portfolio-5.jpg" data-lightbox="portfolio"><i class="fa fa-plus fa-2x text-primary"></i></a>
-                                    <div class="mt-auto">
-                                        <small class="text-white"><i class="fa fa-folder me-2"></i>Web Design</small>
-                                        <a class="h5 d-block text-white mt-1 mb-0" href="">Project Name</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 portfolio-item second wow zoomIn" data-wow-delay="0.6s">
-                            <div class="position-relative rounded overflow-hidden">
-                                <img class="img-fluid w-100" src="img/portfolio-6.jpg" alt="">
-                                <div class="portfolio-overlay">
-                                    <a class="btn btn-light" href="img/portfolio-6.jpg" data-lightbox="portfolio"><i class="fa fa-plus fa-2x text-primary"></i></a>
-                                    <div class="mt-auto">
-                                        <small class="text-white"><i class="fa fa-folder me-2"></i>Web Design</small>
-                                        <a class="h5 d-block text-white mt-1 mb-0" href="">Project Name</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Portfolio End -->
-    
-    
-            <!-- Testimonial Start -->
-            <div class="container-xxl bg-primary testimonial py-5 my-5 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="container py-5 px-lg-5">
-                    <div class="owl-carousel testimonial-carousel">
-                        <div class="testimonial-item bg-transparent border rounded text-white p-4">
-                            <i class="fa fa-quote-left fa-2x mb-3"></i>
-                            <p>Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam</p>
-                            <div class="d-flex align-items-center">
-                                <img class="img-fluid flex-shrink-0 rounded-circle" src="img/testimonial-1.jpg" style="width: 50px; height: 50px;">
-                                <div class="ps-3">
-                                    <h6 class="text-white mb-1">Client Name</h6>
-                                    <small>Profession</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial-item bg-transparent border rounded text-white p-4">
-                            <i class="fa fa-quote-left fa-2x mb-3"></i>
-                            <p>Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam</p>
-                            <div class="d-flex align-items-center">
-                                <img class="img-fluid flex-shrink-0 rounded-circle" src="img/testimonial-2.jpg" style="width: 50px; height: 50px;">
-                                <div class="ps-3">
-                                    <h6 class="text-white mb-1">Client Name</h6>
-                                    <small>Profession</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial-item bg-transparent border rounded text-white p-4">
-                            <i class="fa fa-quote-left fa-2x mb-3"></i>
-                            <p>Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam</p>
-                            <div class="d-flex align-items-center">
-                                <img class="img-fluid flex-shrink-0 rounded-circle" src="img/testimonial-3.jpg" style="width: 50px; height: 50px;">
-                                <div class="ps-3">
-                                    <h6 class="text-white mb-1">Client Name</h6>
-                                    <small>Profession</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial-item bg-transparent border rounded text-white p-4">
-                            <i class="fa fa-quote-left fa-2x mb-3"></i>
-                            <p>Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet eirmod eos labore diam</p>
-                            <div class="d-flex align-items-center">
-                                <img class="img-fluid flex-shrink-0 rounded-circle" src="img/testimonial-4.jpg" style="width: 50px; height: 50px;">
-                                <div class="ps-3">
-                                    <h6 class="text-white mb-1">Client Name</h6>
-                                    <small>Profession</small>
-                                </div>
-                            </div>
-                        </div>
+    <!-- Testimonial Start -->
+<div class="container-xxl bg-primary testimonial py-5 my-5 wow fadeInUp" data-wow-delay="0.1s">
+    <div class="container py-5 px-lg-5">
+        <div class="owl-carousel testimonial-carousel">
+            <div class="testimonial-item bg-transparent border rounded text-white p-4">
+                <i class="fa fa-quote-left fa-2x mb-3"></i>
+                <p>SkillPloy has transformed the way I find job opportunities. The platform perfectly matches my skills to the right jobs.</p>
+                <div class="d-flex align-items-center">
+                    <img class="img-fluid flex-shrink-0 rounded-circle" src="img/testimonial-1.jpg" style="width: 50px; height: 50px;">
+                    <div class="ps-3">
+                        <h6 class="text-white mb-1">John Tan</h6>
+                        <small>Fresh Graduate</small>
                     </div>
                 </div>
             </div>
+            <div class="testimonial-item bg-transparent border rounded text-white p-4">
+                <i class="fa fa-quote-left fa-2x mb-3"></i>
+                <p>精准匹配人才，招聘更加高效！SkillPloy帮助我快速找到合适的候选人。</p>
+                <div class="d-flex align-items-center">
+                    <img class="img-fluid flex-shrink-0 rounded-circle" src="https://down-my.img.susercontent.com/file/bae9e8a415f302fd3c322d37f908afaf_tn.webp" style="width: 50px; height: 50px;">
+                    <div class="ps-3">
+                        <h6 class="text-white mb-1">Emily Wong</h6>
+                        <small>HR Manager</small>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-item bg-transparent border rounded text-white p-4">
+                <i class="fa fa-quote-left fa-2x mb-3"></i>
+                <p>SkillPloy membantu saya memahami keperluan industri dan mempersiapkan pelajar dengan lebih baik untuk masa depan mereka.</p>
+                <div class="d-flex align-items-center">
+                    <img class="img-fluid flex-shrink-0 rounded-circle" src="img/testimonial-3.jpg" style="width: 50px; height: 50px;">
+                    <div class="ps-3">
+                        <h6 class="text-white mb-1">Dr. Lee</h6>
+                        <small>University Lecturer</small>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-item bg-transparent border rounded text-white p-4">
+                <i class="fa fa-quote-left fa-2x mb-3"></i>
+                <p>SkillPloy membantu saya beralih dengan mudah dari universiti ke dunia pekerjaan dengan peluang yang tepat.</p>
+                <div class="d-flex align-items-center">
+                    <img class="img-fluid flex-shrink-0 rounded-circle" src="https://t4.ftcdn.net/jpg/00/43/57/13/360_F_43571304_mBHseTNGfrcrEPvC4CtBNJg1Hki2lkDN.jpg" style="width: 50px; height: 50px;">
+                    <div class="ps-3">
+                        <h6 class="text-white mb-1">Ahmad Zain</h6>
+                        <small>Junior Developer</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
             <!-- Testimonial End -->
     
     
@@ -509,7 +420,7 @@
                 <div class="container px-lg-5">
                     <div class="section-title position-relative text-center mb-5 pb-2 wow fadeInUp" data-wow-delay="0.1s">
                         <h6 class="position-relative d-inline text-primary ps-4">Our Team</h6>
-                        <h2 class="mt-2">Meet Our Team Members</h2>
+                        <h2 class="mt-2">Meet Our Partners</h2>
                     </div>
                     <div class="row g-4">
                         <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
@@ -524,8 +435,8 @@
                                     <img class="img-fluid rounded w-100" src="img/team-1.jpg" alt="">
                                 </div>
                                 <div class="px-4 py-3">
-                                    <h5 class="fw-bold m-0">Jhon Doe</h5>
-                                    <small>CEO</small>
+                                    <h5 class="fw-bold m-0">TS Koay</h5>
+                                    <small>Dell Technologies Managing Director</small>
                                 </div>
                             </div>
                         </div>
@@ -541,8 +452,8 @@
                                     <img class="img-fluid rounded w-100" src="img/team-2.jpg" alt="">
                                 </div>
                                 <div class="px-4 py-3">
-                                    <h5 class="fw-bold m-0">Emma William</h5>
-                                    <small>Manager</small>
+                                    <h5 class="fw-bold m-0">Erma</h5>
+                                    <small>MDEC Senior Manager</small>
                                 </div>
                             </div>
                         </div>
@@ -559,7 +470,7 @@
                                 </div>
                                 <div class="px-4 py-3">
                                     <h5 class="fw-bold m-0">Noah Michael</h5>
-                                    <small>Designer</small>
+                                    <small>TNC | Universiti Malaya</small>
                                 </div>
                             </div>
                         </div>
@@ -569,87 +480,29 @@
             <!-- Team End -->
             
     
-            <!-- Footer Start -->
-            <div class="container-fluid bg-primary text-light footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
-                <div class="container py-5 px-lg-5">
-                    <div class="row g-5">
-                        <div class="col-md-6 col-lg-3">
-                            <h5 class="text-white mb-4">Get In Touch</h5>
-                            <p><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                            <p><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                            <p><i class="fa fa-envelope me-3"></i>info@example.com</p>
-                            <div class="d-flex pt-2">
-                                <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-twitter"></i></a>
-                                <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
-                                <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
-                                <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-instagram"></i></a>
-                                <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-linkedin-in"></i></a>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <h5 class="text-white mb-4">Popular Link</h5>
-                            <a class="btn btn-link" href="">About Us</a>
-                            <a class="btn btn-link" href="">Contact Us</a>
-                            <a class="btn btn-link" href="">Privacy Policy</a>
-                            <a class="btn btn-link" href="">Terms & Condition</a>
-                            <a class="btn btn-link" href="">Career</a>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <h5 class="text-white mb-4">Project Gallery</h5>
-                            <div class="row g-2">
-                                <div class="col-4">
-                                    <img class="img-fluid" src="img/portfolio-1.jpg" alt="Image">
-                                </div>
-                                <div class="col-4">
-                                    <img class="img-fluid" src="img/portfolio-2.jpg" alt="Image">
-                                </div>
-                                <div class="col-4">
-                                    <img class="img-fluid" src="img/portfolio-3.jpg" alt="Image">
-                                </div>
-                                <div class="col-4">
-                                    <img class="img-fluid" src="img/portfolio-4.jpg" alt="Image">
-                                </div>
-                                <div class="col-4">
-                                    <img class="img-fluid" src="img/portfolio-5.jpg" alt="Image">
-                                </div>
-                                <div class="col-4">
-                                    <img class="img-fluid" src="img/portfolio-6.jpg" alt="Image">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <h5 class="text-white mb-4">Newsletter</h5>
-                            <p>Lorem ipsum dolor sit amet elit. Phasellus nec pretium mi. Curabitur facilisis ornare velit non vulpu</p>
-                            <div class="position-relative w-100 mt-3">
-                                <input class="form-control border-0 rounded-pill w-100 ps-4 pe-5" type="text" placeholder="Your Email" style="height: 48px;">
-                                <button type="button" class="btn shadow-none position-absolute top-0 end-0 mt-1 me-2"><i class="fa fa-paper-plane text-primary fs-4"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="container px-lg-5">
-                    <div class="copyright">
-                        <div class="row">
-                            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                                &copy; <a class="border-bottom" href="#">Your Site Name</a>, All Right Reserved. 
-                                
-                                <!--/*** This template is free as long as you keep the footer author’s credit link/attribution link/backlink. If you'd like to use the template without the footer author’s credit link/attribution link/backlink, you can purchase the Credit Removal License from "https://htmlcodex.com/credit-removal". Thank you for your support. ***/-->
-                                Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a>
-                            </div>
-                            <div class="col-md-6 text-center text-md-end">
-                                <div class="footer-menu">
-                                    <a href="">Home</a>
-                                    <a href="">Cookies</a>
-                                    <a href="">Help</a>
-                                    <a href="">FQAs</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+            <div id="footer"></div>
+            <script>
+                // Function to load header and footer
+                function loadHeaderFooter() {
+                    // // Load the header
+                    // fetch('header.html')
+                    //     .then(response => response.text())
+                    //     .then(data => document.getElementById('header').innerHTML = data);
+            
+                    // Load the footer
+                    fetch('footer.html')
+                        .then(response => response.text())
+                        .then(data => document.getElementById('footer').innerHTML = data);
+                }
+            
+                document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+            </script>
+            
+            
             <!-- Footer End -->
-    
     
             <!-- Back to Top -->
             <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top pt-2"><i class="bi bi-arrow-up"></i></a>
