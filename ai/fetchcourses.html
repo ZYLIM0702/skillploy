@@ -3,63 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch Courses</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .response {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-        }
-    </style>
+    <title>Trigger Lambda</title>
 </head>
 <body>
-    <h1>Fetch Courses</h1>
-    <form id="fetchForm">
-        <label for="search_term">Search Term:</label>
-        <input type="text" id="search_term" name="search_term" required>
-        <button type="submit">Fetch</button>
-    </form>
-    <div id="response" class="response" style="display: none;"></div>
+    <h1>Search Courses</h1>
+    <input type="text" id="searchTerm" placeholder="Enter search term" />
+    <button id="searchButton">Search</button>
 
     <script>
-        const apiUrl = "https://parxolhms2.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses";
+        document.getElementById('searchButton').addEventListener('click', async () => {
+            const searchTerm = document.getElementById('searchTerm').value;
 
-        document.getElementById('fetchForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            // Get the search term value
-            const searchTerm = document.getElementById('search_term').value;
+            // Define your API Gateway URL
+            const apiUrl = 'https://qj7qk0r2qa.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
 
             try {
-                // Make the API call
-                const response = await fetch(`${apiUrl}?search_term=${encodeURIComponent(searchTerm)}`, {
-                    method: 'GET',
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json',
                     },
-                    mode: 'cors'
+                    body: JSON.stringify({ search_term: searchTerm }),
                 });
 
-                // Parse the JSON response
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                const data = await response.json();
 
-                // Display the response
-                const responseDiv = document.getElementById('response');
-                responseDiv.style.display = 'block';
-                responseDiv.textContent = JSON.stringify(data, null, 2);
+                const data = await response.json();
+                console.log('Lambda Response:', data);
             } catch (error) {
-                console.error('Error fetching data:', error);
-                const responseDiv = document.getElementById('response');
-                responseDiv.style.display = 'block';
-                responseDiv.textContent = 'An error occurred while fetching the data.';
+                console.error('Error:', error);
             }
         });
     </script>
