@@ -35,7 +35,7 @@
       margin-top: 10px;
     }
 
-    form input, form textarea, form button {
+    form input, form textarea, form button, form select {
       margin-top: 5px;
       padding: 8px;
       font-size: 1rem;
@@ -51,6 +51,15 @@
 
     form button:hover {
       background-color: #005bb5;
+    }
+
+    .skills-container {
+      margin-top: 10px;
+    }
+
+    .skills-container label {
+      display: block;
+      margin-top: 5px;
     }
 
     #jobCards {
@@ -84,8 +93,15 @@
         <label for="jobDescription">Job Description:</label>
         <textarea id="jobDescription" name="jobDescription" required></textarea>
 
-        <label for="requiredSkills">Required Skills (comma-separated):</label>
-        <input type="text" id="requiredSkills" name="requiredSkills" required>
+        <label for="sector">Sector:</label>
+        <select id="sector" name="sector" required>
+          <option value="" disabled selected>Select a sector</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Finance">Finance</option>
+          <option value="Healthcare">Healthcare</option>
+        </select>
+
+        <div id="skillsSection" class="skills-container"></div>
 
         <label for="salaryRange">Salary Range:</label>
         <input type="text" id="salaryRange" name="salaryRange" placeholder="e.g., RM4000 - RM6000">
@@ -104,8 +120,33 @@
   <script>
     // JavaScript Logic
 
+    // Predefined skills by sector
+    const skillsBySector = {
+      "Computer Science": ["Programming", "Machine Learning", "Cybersecurity", "Web Development", "Data Analysis", "Cloud Computing", "Database Management", "Networking", "UI/UX Design", "DevOps"],
+      "Finance": ["Accounting", "Financial Analysis", "Investment Strategies", "Risk Management", "Taxation", "Auditing", "Wealth Management", "Budgeting", "Banking Operations", "Corporate Finance"],
+      "Healthcare": ["Patient Care", "Medical Coding", "Pharmacology", "Health Administration", "Nursing", "Emergency Response", "Surgical Assistance", "Medical Research", "Diagnostics", "Public Health"]
+    };
+
     // Dummy storage for job postings
     const jobPostings = [];
+
+    // Populate skills based on sector
+    document.getElementById("sector").addEventListener("change", function () {
+      const selectedSector = this.value;
+      const skillsContainer = document.getElementById("skillsSection");
+      skillsContainer.innerHTML = ""; // Clear previous skills
+
+      if (skillsBySector[selectedSector]) {
+        skillsBySector[selectedSector].forEach(skill => {
+          const skillOption = document.createElement("label");
+          skillOption.innerHTML = `
+            <input type="checkbox" value="${skill}" name="skills">
+            ${skill}
+          `;
+          skillsContainer.appendChild(skillOption);
+        });
+      }
+    });
 
     // Form Submission Logic
     document.getElementById("postJobForm").addEventListener("submit", function (e) {
@@ -114,14 +155,16 @@
       // Get form data
       const jobTitle = document.getElementById("jobTitle").value;
       const jobDescription = document.getElementById("jobDescription").value;
-      const requiredSkills = document.getElementById("requiredSkills").value.split(",").map(skill => skill.trim());
+      const sector = document.getElementById("sector").value;
+      const selectedSkills = Array.from(document.querySelectorAll("input[name='skills']:checked")).map(skill => skill.value);
       const salaryRange = document.getElementById("salaryRange").value;
 
       // Create job object
       const job = {
         title: jobTitle,
         description: jobDescription,
-        skills: requiredSkills,
+        sector: sector,
+        skills: selectedSkills,
         salary: salaryRange,
       };
 
@@ -131,6 +174,7 @@
 
       // Clear form
       document.getElementById("postJobForm").reset();
+      document.getElementById("skillsSection").innerHTML = ""; // Clear skills section
     });
 
     // Render Job Postings
@@ -144,6 +188,7 @@
         card.innerHTML = `
           <h3>${job.title}</h3>
           <p>${job.description}</p>
+          <p><strong>Sector:</strong> ${job.sector}</p>
           <p><strong>Skills:</strong> ${job.skills.join(", ")}</p>
           <p><strong>Salary:</strong> ${job.salary}</p>
         `;
