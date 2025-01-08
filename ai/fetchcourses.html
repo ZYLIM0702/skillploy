@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoke API Gateway</title>
+</head>
+<body>
+  <h1>Invoke API Gateway</h1>
+  <button id="invoke">Invoke API</button>
+
+  <script>
+    document.getElementById('invoke').addEventListener('click', async () => {
+      const apiEndpoint = 'https://parxolhms2.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
+
+      try {
+        const response = await fetch(apiEndpoint, {
+          method: 'POST', // Use the appropriate HTTP method (POST/GET/etc.)
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*', // For testing (API Gateway must also have CORS enabled)
+          },
+          body: JSON.stringify({ search_term: 'RAG' }), // Include any necessary payload
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data);
+        alert('API Response: ' + JSON.stringify(data));
+      } catch (error) {
+        console.error('Error invoking API:', error);
+        alert('Error invoking API: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
