@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    select, button {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+    }
+    .leaderboard {
+      margin-top: 20px;
+    }
+    .leaderboard table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .leaderboard th, .leaderboard td {
+      border: 1px solid #ddd;
+      text-align: left;
+      padding: 8px;
+    }
+    .leaderboard th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>University Leaderboard</h1>
+    <label for="sector">Choose Sector:</label>
+    <select id="sector">
+      <option value="">-- Select Sector --</option>
+      <option value="finance">Finance</option>
+      <option value="computer-science">Computer Science</option>
+      <option value="healthcare">Healthcare</option>
+    </select>
+
+    <label for="course">Choose Course:</label>
+    <select id="course">
+      <option value="">-- Select Course --</option>
+    </select>
+
+    <div class="leaderboard">
+      <h2>Leaderboard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>University</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+          <tr>
+            <td colspan="3">Select a sector and course to view the leaderboard</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Dummy data for courses and leaderboard
+    const coursesBySector = {
+      finance: ["Accounting", "Investment Analysis", "Corporate Finance"],
+      "computer-science": ["AI Development", "Web Development", "Cybersecurity"],
+      healthcare: ["Nursing", "Pharmacy", "Health Administration"],
+    };
+
+    const leaderboardData = {
+      "Accounting": [
+        { rank: 1, university: "University A", score: 95 },
+        { rank: 2, university: "University B", score: 88 },
+      ],
+      "AI Development": [
+        { rank: 1, university: "University C", score: 92 },
+        { rank: 2, university: "University D", score: 89 },
+      ],
+      "Nursing": [
+        { rank: 1, university: "University E", score: 90 },
+        { rank: 2, university: "University F", score: 85 },
+      ],
+    };
+
+    // DOM elements
+    const sectorDropdown = document.getElementById("sector");
+    const courseDropdown = document.getElementById("course");
+    const leaderboardBody = document.getElementById("leaderboard-body");
+
+    // Update courses based on selected sector
+    sectorDropdown.addEventListener("change", () => {
+      const sector = sectorDropdown.value;
+      courseDropdown.innerHTML = `<option value="">-- Select Course --</option>`;
+      if (sector && coursesBySector[sector]) {
+        coursesBySector[sector].forEach(course => {
+          const option = document.createElement("option");
+          option.value = course;
+          option.textContent = course;
+          courseDropdown.appendChild(option);
+        });
+      }
+      updateLeaderboard();
+    });
+
+    // Update leaderboard based on selected course
+    courseDropdown.addEventListener("change", updateLeaderboard);
+
+    function updateLeaderboard() {
+      const course = courseDropdown.value;
+      leaderboardBody.innerHTML = "";
+
+      if (course && leaderboardData[course]) {
+        leaderboardData[course].forEach(({ rank, university, score }) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${rank}</td><td>${university}</td><td>${score}</td>`;
+          leaderboardBody.appendChild(row);
+        });
+      } else {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="3">No data available</td>`;
+        leaderboardBody.appendChild(row);
+      }
+    }
+  </script>
+</body>
+</html>
