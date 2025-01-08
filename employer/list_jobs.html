@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Listings</title>
+  <style>
+    /* CSS Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    header {
+      background-color: #0073e6;
+      color: white;
+      text-align: center;
+      padding: 1em 0;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    .job-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .job-card h3 {
+      margin: 0;
+      color: #0073e6;
+    }
+
+    .job-card p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Job Listings</h1>
+  </header>
+
+  <main>
+    <section id="jobList">
+      <h2>Available Jobs</h2>
+      <div id="jobCardsContainer"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    // Import Firebase configuration and Firestore modules
+    import { db } from '../firebase-config.js';
+    import {
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    // Function to fetch and display jobs
+    async function fetchAndDisplayJobs() {
+      const jobCardsContainer = document.getElementById('jobCardsContainer');
+      jobCardsContainer.innerHTML = ''; // Clear previous job cards
+
+      try {
+        // Fetch all jobs from Firestore
+        const jobsQuerySnapshot = await getDocs(collection(db, "Jobs"));
+
+        // Check if there are any jobs
+        if (jobsQuerySnapshot.empty) {
+          jobCardsContainer.innerHTML = '<p>No jobs available at the moment.</p>';
+          return;
+        }
+
+        // Create job cards for each job
+        jobsQuerySnapshot.forEach(doc => {
+          const job = doc.data();
+          const jobCard = document.createElement('div');
+          jobCard.className = 'job-card';
+          jobCard.innerHTML = `
+            <h3>${job.title}</h3>
+            <p><strong>Salary:</strong> ${job.salary}</p>
+            <p><strong>Description:</strong> ${job.description}</p>
+          `;
+          jobCardsContainer.appendChild(jobCard);
+        });
+      } catch (error) {
+        console.error("Error fetching jobs: ", error);
+        jobCardsContainer.innerHTML = '<p>Error loading jobs. Please try again later.</p>';
+      }
+    }
+
+    // Load jobs on page load
+    fetchAndDisplayJobs();
+  </script>
+</body>
+
+</html>

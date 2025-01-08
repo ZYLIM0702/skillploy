@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Selector</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    .skill-box {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: gray;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Select Your Top 3 Skills</h1>
+  <div class="skill-box" id="skills-container"></div>
+  <button id="submit-button" disabled>Submit</button>
+  <p class="error" id="error-message"></p>
+
+  <script type="module">
+    import { db } from "../firebase-config.js";
+    import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    const skillsContainer = document.getElementById('skills-container');
+    const submitButton = document.getElementById('submit-button');
+    const errorMessage = document.getElementById('error-message');
+
+    let selectedSkills = [];
+
+    // Fetch skills from Firestore and render them as checkboxes
+const fetchSkills = async () => {
+    try {
+        const skillsCollection = collection(db, 'Skills');
+        const snapshot = await getDocs(skillsCollection);
+        
+        if (!snapshot.empty) {
+            snapshot.docs.forEach((doc) => {
+                const skillData = doc.data();
+                createCheckbox(skillData.name, doc.id);
+            });
+        } else {
+            // Handle case when no skills are found
+            const row = document.createElement('div');
+            row.textContent = 'No skills found';
+            skillsContainer.appendChild(row);
+        }
+    } catch (error) {
+        console.error('Error fetching skills:', error);
+    }
+};
+
+// Render checkboxes for skills
+const createCheckbox = (label, value) => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = value;
+    checkbox.addEventListener('change', handleCheckboxChange);
+
+    const labelElement = document.createElement('label');
+    labelElement.textContent = label;
+
+    const div = document.createElement('div');
+    div.appendChild(checkbox);
+    div.appendChild(labelElement);
+
+    skillsContainer.appendChild(div);
+};
+
+
+    // Handle checkbox changes
+    function handleCheckboxChange(event) {
+      const value = event.target.value;
+
+      if (event.target.checked) {
+        if (selectedSkills.length < 3) {
+          selectedSkills.push(value);
+        } else {
+          event.target.checked = false;
+          errorMessage.textContent = 'You can only select up to 3 skills.';
+          setTimeout(() => errorMessage.textContent = '', 3000);
+        }
+      } else {
+        selectedSkills = selectedSkills.filter((skill) => skill !== value);
+      }
+
+      submitButton.disabled = selectedSkills.length === 0;
+    }
+
+    // Submit selected skills to Firestore
+    async function submitSkills() {
+      const studentId = "4ihhCbDEFVSlVe7OHq5jKKPXtNn2"; // Replace with the actual studentId
+
+      try {
+        await collection(db,'Students').doc(studentId).update({
+          selectedSkills: selectedSkills
+        });
+        alert('Skills successfully submitted!');
+        selectedSkills = [];
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        submitButton.disabled = true;
+      } catch (error) {
+        console.error('Error submitting skills:', error);
+      }
+    }
+
+    submitButton.addEventListener('click', submitSkills);
+
+    // Load skills on page load
+    fetchSkills();
+  </script>
+</body>
+</html>
