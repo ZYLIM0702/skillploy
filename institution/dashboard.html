@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center" id="university-name">Loading University...</h1>
+        <h2 class="text-center">Courses Dashboard</h2>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="filter-faculty" class="form-label">Filter by Faculty</label>
+                    <select id="filter-faculty" class="form-select">
+                        <option value="all">All Faculties</option>
+                        <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+                        <option value="Faculty of Medicine">Faculty of Medicine</option>
+                        <option value="Faculty of Finance">Faculty of Finance</option>
+                    </select>
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Course Title</th>
+                            <th>Faculty</th>
+                        </tr>
+                    </thead>
+                    <tbody id="course-table">
+                        <!-- Dynamic rows here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from '../firebase-config.js';
+        import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+
+        const courseTable = document.getElementById('course-table');
+        const filterFaculty = document.getElementById('filter-faculty');
+        const universityNameElement = document.getElementById('university-name');
+
+        const fetchUniversityName = async () => {
+            const institutionsCollection = collection(db, 'Institutions');
+            const snapshot = await getDocs(institutionsCollection);
+            if (!snapshot.empty) {
+                const universityData = snapshot.docs[0].data();
+                universityNameElement.textContent = universityData.name || 'University';
+            } else {
+                universityNameElement.textContent = 'Unknown University';
+            }
+        };
+
+        const renderCourses = (courses) => {
+            courseTable.innerHTML = '';
+            if (courses.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="2" class="text-center">No courses found</td>';
+                courseTable.appendChild(row);
+            } else {
+                courses.forEach(course => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${course.title}</td>
+                        <td>${course.faculty}</td>
+                    `;
+                    courseTable.appendChild(row);
+                });
+            }
+        };
+
+        const fetchCourses = async (faculty = 'all') => {
+            // Clear the table immediately
+            courseTable.innerHTML = '<tr><td colspan="2" class="text-center">Loading...</td></tr>';
+            
+            const coursesCollection = collection(db, 'Courses');
+            let q;
+
+            if (faculty !== 'all') {
+                q = query(coursesCollection, where('faculty', '==', faculty));
+            } else {
+                q = query(coursesCollection);
+            }
+
+            const snapshot = await getDocs(q);
+            const courses = snapshot.docs.map(doc => doc.data());
+            renderCourses(courses);
+        };
+
+        filterFaculty.addEventListener('change', () => {
+            const selectedFaculty = filterFaculty.value;
+            fetchCourses(selectedFaculty);
+        });
+
+        // Initial fetch
+        fetchUniversityName();
+        fetchCourses();
+    </script>
+</body>
+</html>
