@@ -15,20 +15,31 @@
             const userInfo = document.getElementById('user-info');
             const logoutButton = document.getElementById('logout-btn');
 
+            const getUserData = async (uid) => {
+                const collections = ['Students', 'Employers', 'Lecturers'];
+                
+                for (const collectionName of collections) {
+                    const userDocRef = doc(db, collectionName, uid);
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    if (userDoc.exists()) {
+                        return { data: userDoc.data(), collection: collectionName };
+                    }
+                }
+                return null;
+            };
+
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     const uid = user.uid;
-                    const accountType = localStorage.getItem('accountType');
-                    const collectionName = accountType.charAt(0).toUpperCase() + accountType.slice(1) + 's';
-                    const userDocRef = doc(db, collectionName, uid);
-                    const userDoc = await getDoc(userDocRef);
-
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
+                    const userResult = await getUserData(uid);
+                    
+                    if (userResult) {
+                        const { data, collection } = userResult;
                         userInfo.innerHTML = `
-                            <h2>Welcome, ${data.name}!</h2>
-                            <p>Email: ${data.email}</p>
-                            <p>Account Type: ${accountType}</p>
+                            <h2>Welcome, ${data.name || 'User'}!</h2>
+                            <p>Email: ${data.email || 'N/A'}</p>
+                            <p>Account Type: ${collection}</p>
                             ${data.institution ? `<p>Institution: ${data.institution}</p>` : ''}
                             ${data.faculty ? `<p>Faculty: ${data.faculty}</p>` : ''}
                             ${data.companyName ? `<p>Company Name: ${data.companyName}</p>` : ''}
@@ -46,7 +57,6 @@
             logoutButton.addEventListener('click', () => {
                 signOut(auth).then(() => {
                     localStorage.removeItem('user');
-                    localStorage.removeItem('accountType');
                     window.location.href = 'signup.html';
                 }).catch((error) => {
                     alert('Error logging out: ' + error.message);
