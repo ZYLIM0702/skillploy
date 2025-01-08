@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employer Job Posting Module</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
   <style>
     /* CSS Styles */
     body {
@@ -109,16 +112,23 @@
         <button type="submit">Post Job</button>
       </form>
     </section>
-
-    <!-- Display Job Postings -->
-    <section id="job-listings">
-      <h2>Job Postings</h2>
-      <div id="jobCards"></div>
-    </section>
   </main>
 
+  <!-- Firebase Scripts -->
   <script>
-    // JavaScript Logic
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "FIREBASE_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
 
     // Predefined skills by sector
     const skillsBySector = {
@@ -126,9 +136,6 @@
       "Finance": ["Accounting", "Financial Analysis", "Investment Strategies", "Risk Management", "Taxation", "Auditing", "Wealth Management", "Budgeting", "Banking Operations", "Corporate Finance"],
       "Healthcare": ["Patient Care", "Medical Coding", "Pharmacology", "Health Administration", "Nursing", "Emergency Response", "Surgical Assistance", "Medical Research", "Diagnostics", "Public Health"]
     };
-
-    // Dummy storage for job postings
-    const jobPostings = [];
 
     // Populate skills based on sector
     document.getElementById("sector").addEventListener("change", function () {
@@ -149,7 +156,7 @@
     });
 
     // Form Submission Logic
-    document.getElementById("postJobForm").addEventListener("submit", function (e) {
+    document.getElementById("postJobForm").addEventListener("submit", async function (e) {
       e.preventDefault();
 
       // Get form data
@@ -163,38 +170,26 @@
       const job = {
         title: jobTitle,
         description: jobDescription,
+        employerId: "EMPLOYER_ID", // Replace with actual employer ID
+        requirements: selectedSkills,
+        applicants: [],
         sector: sector,
-        skills: selectedSkills,
         salary: salaryRange,
       };
 
-      // Add to job postings and render
-      jobPostings.push(job);
-      renderJobPostings();
+      try {
+        // Insert into Firestore
+        await db.collection("Job").add(job);
+        alert("Job successfully posted!");
+      } catch (error) {
+        console.error("Error posting job: ", error);
+        alert("Error posting job. Please try again.");
+      }
 
       // Clear form
       document.getElementById("postJobForm").reset();
       document.getElementById("skillsSection").innerHTML = ""; // Clear skills section
     });
-
-    // Render Job Postings
-    function renderJobPostings() {
-      const jobCardsContainer = document.getElementById("jobCards");
-      jobCardsContainer.innerHTML = ""; // Clear existing cards
-
-      jobPostings.forEach(job => {
-        const card = document.createElement("div");
-        card.className = "job-card";
-        card.innerHTML = `
-          <h3>${job.title}</h3>
-          <p>${job.description}</p>
-          <p><strong>Sector:</strong> ${job.sector}</p>
-          <p><strong>Skills:</strong> ${job.skills.join(", ")}</p>
-          <p><strong>Salary:</strong> ${job.salary}</p>
-        `;
-        jobCardsContainer.appendChild(card);
-      });
-    }
   </script>
 </body>
 </html>
