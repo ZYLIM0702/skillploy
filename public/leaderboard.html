@@ -69,69 +69,68 @@
       </table>
     </div>
   </div>
+  <script type="module">
 
-  <script>
-    // Dummy data for courses and leaderboard
-    const coursesBySector = {
-      finance: ["Accounting", "Investment Analysis", "Corporate Finance"],
-      "computer-science": ["AI Development", "Web Development", "Cybersecurity"],
-      healthcare: ["Nursing", "Pharmacy", "Health Administration"],
-    };
+    import { db,auth } from '../firebase-config.js';
 
-    const leaderboardData = {
-      "Accounting": [
-        { rank: 1, university: "University A", score: 95 },
-        { rank: 2, university: "University B", score: 88 },
-      ],
-      "AI Development": [
-        { rank: 1, university: "University C", score: 92 },
-        { rank: 2, university: "University D", score: 89 },
-      ],
-      "Nursing": [
-        { rank: 1, university: "University E", score: 90 },
-        { rank: 2, university: "University F", score: 85 },
-      ],
-    };
+    const facultyDropdown = document.getElementById("facultyDropdown");
+    const courseDropdown = document.getElementById("courseDropdown");
+    const leaderboardTable = document.getElementById("leaderboardTable");
 
-    // DOM elements
-    const sectorDropdown = document.getElementById("sector");
-    const courseDropdown = document.getElementById("course");
-    const leaderboardBody = document.getElementById("leaderboard-body");
+    // Populate Courses Dropdown Based on Selected Faculty
+    facultyDropdown.addEventListener("change", async () => {
+      const selectedFaculty = facultyDropdown.value;
+      courseDropdown.innerHTML = '<option value="">-- Select a Course --</option>'; // Clear previous options
 
-    // Update courses based on selected sector
-    sectorDropdown.addEventListener("change", () => {
-      const sector = sectorDropdown.value;
-      courseDropdown.innerHTML = `<option value="">-- Select Course --</option>`;
-      if (sector && coursesBySector[sector]) {
-        coursesBySector[sector].forEach(course => {
-          const option = document.createElement("option");
-          option.value = course;
-          option.textContent = course;
-          courseDropdown.appendChild(option);
-        });
-      }
-      updateLeaderboard();
+      const coursesRef = collection(db, "Courses");
+      const q = query(coursesRef, where("faculty", "==", selectedFaculty));
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach(doc => {
+        const course = doc.data();
+        courseDropdown.innerHTML += `<option value="${course.uniqueIdentifier}">${course.title}</option>`;
+      });
     });
 
-    // Update leaderboard based on selected course
-    courseDropdown.addEventListener("change", updateLeaderboard);
-
-    function updateLeaderboard() {
-      const course = courseDropdown.value;
-      leaderboardBody.innerHTML = "";
-
-      if (course && leaderboardData[course]) {
-        leaderboardData[course].forEach(({ rank, university, score }) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `<td>${rank}</td><td>${university}</td><td>${score}</td>`;
-          leaderboardBody.appendChild(row);
-        });
-      } else {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td colspan="3">No data available</td>`;
-        leaderboardBody.appendChild(row);
+    // Load Leaderboard
+    async function loadLeaderboard() {
+      const selectedCourse = courseDropdown.value;
+      if (!selectedCourse) {
+        alert("Please select a course!");
+        return;
       }
+
+      leaderboardTable.innerHTML = ""; // Clear previous leaderboard
+
+      const institutionsRef = collection(db, "Institutions");
+      const q = query(institutionsRef, where("uniqueIdentifier", "==", selectedCourse));
+      const snapshot = await getDocs(q);
+
+      const scores = {}; // To store cumulative scores for each university
+
+      for (const doc of snapshot.docs) {
+        const institution = doc.data();
+        const coursesRef = collection(db, "Courses");
+        const courseSnapshot = await getDocs(query(coursesRef, where("uniqueIdentifier", "==", selectedCourse)));
+
+        courseSnapshot.forEach(courseDoc => {
+          const course = courseDoc.data();
+          if (!scores[institution.university]) scores[institution.university] = 0;
+          scores[institution.university] += course.overallRating;
+        });
+      }
+
+      // Populate Leaderboard Table
+      Object.entries(scores).forEach(([university, score]) => {
+        leaderboardTable.innerHTML += `
+          <tr>
+            <td>${university}</td>
+            <td>${score.toFixed(2)}</td>
+          </tr>
+        `;
+      });
     }
   </script>
+
 </body>
 </html>
