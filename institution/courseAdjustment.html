@@ -60,6 +60,22 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
+        .chat-messages {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            text-align: right;
+            color: #007bff;
+        }
+
+        .bot-message {
+            text-align: left;
+            color: #333;
+        }
     </style>
 </head>
 
@@ -87,8 +103,9 @@
 
         <div class="chatbot">
             <h4>Chatbot</h4>
-            <input type="text" class="form-control mb-2" placeholder="Ask me anything...">
-            <button class="btn btn-primary w-100">Send</button>
+            <div id="chatMessages" class="chat-messages"></div>
+            <input type="text" id="userInput" class="form-control mb-2" placeholder="Ask me anything...">
+            <button class="btn btn-primary w-100" id="sendMessage">Send</button>
         </div>
     </div>
 
@@ -104,8 +121,11 @@
         const suggestedModulesDiv = document.getElementById('suggestedModules');
         const suggestedCoursesDiv = document.getElementById('suggestedCourses');
         const generateButton = document.getElementById('generateModules');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const sendMessageButton = document.getElementById('sendMessage');
 
-        const courseId = "course1";  // Replace with the actual course ID or dynamically fetch
+        const courseId = "Nn9Cmv2EQZtWfTLfrVrI";  // Replace with the actual course ID or dynamically fetch
 
         // Fetch current modules from Firestore
         const fetchCourseModules = async () => {
@@ -124,6 +144,26 @@
                 });
             }
         };
+
+        const fetchCourseFeedbackComments = async () => {
+            const courseRef = doc(db, 'Courses', courseId);
+            const courseDoc = await getDoc(courseRef);
+
+            if (courseDoc.exists()) {
+                const courseData = courseDoc.data();
+                const feedbacks = courseData.feedbacks || []; // Default to an empty array if feedbacks is undefined
+
+                // Extract comments from each feedback
+                const commentsArray = feedbacks.map(feedback => feedback.comments || "");
+                const allComments = commentsArray.join(" "); // Join all comments into a single string
+
+                console.log(allComments); // Output the concatenated comments
+                return allComments;
+            } else {
+                console.log("Course not found");
+                return "";
+            }
+        };      
 
         // Generate suggested modules (mock API call)
         generateButton.addEventListener('click', async () => {
@@ -171,8 +211,50 @@
             });
         };
 
+        // Send message to OpenAI API
+        const sendMessageToChatbot = async (message) => {
+            const apiKey = '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'; // Replace with your OpenAI API key
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [{ role: 'user', content: message }],
+                }),
+            });
+
+            const data = await response.json();
+            const botMessage = data.choices[0].message.content;
+
+            // Display user and bot messages
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'user-message';
+            userMessageDiv.textContent = message;
+            chatMessages.appendChild(userMessageDiv);
+
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'bot-message';
+            botMessageDiv.textContent = botMessage;
+            chatMessages.appendChild(botMessageDiv);
+
+            // Scroll to the latest message
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+
+        sendMessageButton.addEventListener('click', () => {
+            const message = userInput.value;
+            if (message.trim() !== '') {
+                sendMessageToChatbot(message);
+                userInput.value = ''; // Clear the input field
+            }
+        });
+
         fetchCourseModules();
-        fetchSuggestedCourses();
+        const courseFeedbackString = fetchCourseFeedbackComments();
+        fetchSuggestedCourses(courseFeedbackString);
     </script>
 </body>
 
