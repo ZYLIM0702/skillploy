@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employer Skill Submission Module</title>
+  <style>
+    /* CSS Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    header {
+      background-color: #0073e6;
+      color: white;
+      text-align: center;
+      padding: 1em 0;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    form label {
+      margin-top: 10px;
+    }
+
+    form input, form textarea, form button, form select {
+      margin-top: 5px;
+      padding: 8px;
+      font-size: 1rem;
+    }
+
+    form button {
+      margin-top: 15px;
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #005bb5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Employer Skill Submission Module</h1>
+  </header>
+
+  <main>
+    <!-- Submit New Skills Form -->
+    <section id="skill-form">
+      <h2>Submit a New Skill</h2>
+      <form id="submitSkillForm">
+        <label for="skillName">Skill Name:</label>
+        <input type="text" id="skillName" name="skillName" required>
+
+        <label for="skillDescription">Skill Description:</label>
+        <textarea id="skillDescription" name="skillDescription" required></textarea>
+
+        <label for="skillSector">Sector:</label>
+        <select id="skillSector" name="skillSector" required>
+          <option value="" disabled selected>Select a sector</option>
+          <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+          <option value="Faculty of Finance">Faculty of Finance</option>
+          <option value="Faculty of Medicine">Faculty of Medicine</option>
+        </select>
+
+        <label for="relatedLinks">Related Links (comma-separated):</label>
+        <input type="text" id="relatedLinks" name="relatedLinks" placeholder="e.g., https://link1.com, https://link2.com">
+
+        <button type="submit">Submit Skill</button>
+      </form>
+    </section>
+  </main>
+
+  <script type="module">
+    // Import Firebase configuration and Firestore modules
+    import { db } from './firebase-config.js';
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Form Submission Logic for New Skills
+    document.getElementById("submitSkillForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      // Get form data
+      const skillName = document.getElementById("skillName").value;
+      const skillDescription = document.getElementById("skillDescription").value;
+      const skillSector = document.getElementById("skillSector").value;
+      const relatedLinksInput = document.getElementById("relatedLinks").value;
+      const relatedLinks = relatedLinksInput.split(",").map(link => link.trim());
+
+      // Create skill object
+      const newSkill = {
+        name: skillName,
+        description: skillDescription,
+        sector: skillSector,
+        ragLinks: relatedLinks,
+      };
+
+      try {
+        // Add skill to Firestore
+        await addDoc(collection(db, "Skills"), newSkill);
+
+        // Success message
+        alert("Skill submitted successfully!");
+        document.getElementById("submitSkillForm").reset();
+      } catch (error) {
+        console.error("Error adding skill:", error);
+        alert("Error submitting skill. Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>
