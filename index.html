@@ -4,113 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firebase Auth</title>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-        }
-        .form-container {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Firebase Auth</h1>
-        <div id="login-container" class="form-container">
-            <h2>Login</h2>
-            <input type="email" id="login-email" placeholder="Email"><br>
-            <input type="password" id="login-password" placeholder="Password"><br>
-            <button onclick="login()">Login</button>
-            <p>Don't have an account? <a href="#" onclick="toggleForm('signup')">Sign up</a></p>
-        </div>
+        <h1>Welcome to FW Studio</h1>
+        <div id="auth-container">
+            <div id="login-box" class="box">
+                <h2>Login</h2>
+                <input type="email" id="login-email" placeholder="Email">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="login()">Login</button>
+            </div>
 
-        <div id="signup-container" class="form-container">
-            <h2>Sign Up</h2>
-            <input type="email" id="signup-email" placeholder="Email"><br>
-            <input type="password" id="signup-password" placeholder="Password"><br>
-            <button onclick="signup()">Sign Up</button>
-            <p>Already have an account? <a href="#" onclick="toggleForm('login')">Login</a></p>
+            <div id="signup-box" class="box">
+                <h2>Sign Up</h2>
+                <input type="email" id="signup-email" placeholder="Email">
+                <input type="password" id="signup-password" placeholder="Password">
+                <button onclick="signup()">Sign Up</button>
+            </div>
         </div>
-
-        <div id="main-container">
-            <h2>Main Page</h2>
-            <p>You are logged in!</p>
+        
+        <div id="logout-container" style="display:none;">
+            <h2>You're Logged In</h2>
             <button onclick="logout()">Logout</button>
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+
+        // Your Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyBjFLQAyM1F_KCG1Bl2eMJ1zu-h7g5gL8U",
             authDomain: "skillploy.firebaseapp.com",
             projectId: "skillploy",
+            storageBucket: "skillploy.firebasestorage.app",
+            messagingSenderId: "234537234700",
+            appId: "1:234537234700:web:450eb6389910ca782d5929"
         };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        
-        const loginContainer = document.getElementById('login-container');
-        const signupContainer = document.getElementById('signup-container');
-        const mainContainer = document.getElementById('main-container');
-        
-        function toggleForm(form) {
-            loginContainer.style.display = form === 'login' ? 'block' : 'none';
-            signupContainer.style.display = form === 'signup' ? 'block' : 'none';
-            mainContainer.style.display = 'none';
-        }
 
-        function login() {
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Login function
+        window.login = () => {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    alert('Logged in successfully');
-                    showMainPage();
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert('Logged in successfully!');
+                    toggleUI(true);
                 })
-                .catch(error => alert(error.message));
-        }
+                .catch((error) => {
+                    alert(error.message);
+                });
+        };
 
-        function signup() {
+        // Sign up function
+        window.signup = () => {
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
-                    alert('Account created');
-                    showMainPage();
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert('Account created!');
+                    toggleUI(true);
                 })
-                .catch(error => alert(error.message));
-        }
+                .catch((error) => {
+                    alert(error.message);
+                });
+        };
 
-        function logout() {
-            auth.signOut().then(() => {
-                alert('Logged out');
-                toggleForm('login');
+        // Logout function
+        window.logout = () => {
+            signOut(auth).then(() => {
+                alert('Logged out successfully!');
+                toggleUI(false);
+            }).catch((error) => {
+                alert(error.message);
             });
-        }
+        };
 
-        function showMainPage() {
-            loginContainer.style.display = 'none';
-            signupContainer.style.display = 'none';
-            mainContainer.style.display = 'block';
+        // Toggle UI on login/logout
+        function toggleUI(isLoggedIn) {
+            document.getElementById('auth-container').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('logout-container').style.display = isLoggedIn ? 'block' : 'none';
         }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                showMainPage();
-            } else {
-                toggleForm('login');
-            }
-        });
     </script>
 </body>
 </html>
