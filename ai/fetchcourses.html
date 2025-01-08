@@ -43,12 +43,17 @@
             }
 
             try {
-                const response = await fetch(new Request(apiUrl, { referrerPolicy: 'no-referrer' }), {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+                const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                     },
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status}`);
@@ -58,7 +63,7 @@
                 document.getElementById('result').innerText = JSON.stringify(data, null, 2);
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('result').innerText = 'Failed to fetch data. Please check the server connection or configuration.';
+                document.getElementById('result').innerText = 'Failed to fetch data. Please check the server connection or SSL configuration.';
             }
         });
     </script>
