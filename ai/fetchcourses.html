@@ -18,7 +18,7 @@
           method: 'POST', // Use the appropriate HTTP method (POST/GET/etc.)
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*', // For testing (API Gateway must also have CORS enabled)
+            'Access-Control-Allow-Origin': 'no-cors', // For testing (API Gateway must also have CORS enabled)
           },
           body: JSON.stringify({ search_term: 'RAG' }), // Include any necessary payload
         });
