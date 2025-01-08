@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University Course Comparison</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    select, button {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+    }
+    .comparison-table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .comparison-table th, .comparison-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .comparison-table th {
+      background-color: #f4f4f4;
+    }
+    .highlight {
+      background-color: #ffeb3b; /* Highlight for differences */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>University Course Comparison</h1>
+
+    <label for="university1">Select First University:</label>
+    <select id="university1">
+      <option value="">-- Select University --</option>
+      <option value="University A">University A</option>
+      <option value="University B">University B</option>
+      <option value="University C">University C</option>
+    </select>
+
+    <label for="university2">Select Second University:</label>
+    <select id="university2">
+      <option value="">-- Select University --</option>
+      <option value="University A">University A</option>
+      <option value="University B">University B</option>
+      <option value="University C">University C</option>
+    </select>
+
+    <label for="course">Select Course:</label>
+    <select id="course">
+      <option value="">-- Select Course --</option>
+      <option value="AI Development">AI Development</option>
+      <option value="Web Development">Web Development</option>
+      <option value="Cybersecurity">Cybersecurity</option>
+    </select>
+
+    <button id="compareButton">Compare</button>
+
+    <table class="comparison-table" id="comparisonTable">
+      <thead>
+        <tr>
+          <th>Course Name</th>
+          <th>University 1</th>
+          <th>University 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="3">Select universities and course to compare</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Dummy data for course structures
+    const courseStructures = {
+      "AI Development": {
+        "University A": ["Introduction to AI", "Machine Learning", "Neural Networks", "AI Ethics"],
+        "University B": ["Introduction to AI", "Deep Learning", "AI Ethics"],
+        "University C": ["Machine Learning", "Neural Networks", "AI Deployment"],
+      },
+      "Web Development": {
+        "University A": ["HTML Basics", "CSS Fundamentals", "JavaScript Essentials"],
+        "University B": ["HTML Basics", "Advanced CSS", "JavaScript Frameworks"],
+        "University C": ["HTML Basics", "CSS Fundamentals", "Server-Side Scripting"],
+      },
+      "Cybersecurity": {
+        "University A": ["Network Security", "Cryptography", "Ethical Hacking"],
+        "University B": ["Cryptography", "Ethical Hacking", "Incident Response"],
+        "University C": ["Network Security", "Ethical Hacking", "Cyber Law"],
+      },
+    };
+
+    const university1Dropdown = document.getElementById("university1");
+    const university2Dropdown = document.getElementById("university2");
+    const courseDropdown = document.getElementById("course");
+    const compareButton = document.getElementById("compareButton");
+    const comparisonTable = document.getElementById("comparisonTable").querySelector("tbody");
+
+    compareButton.addEventListener("click", () => {
+      const university1 = university1Dropdown.value;
+      const university2 = university2Dropdown.value;
+      const course = courseDropdown.value;
+
+      if (!university1 || !university2 || !course) {
+        alert("Please select both universities and a course to compare.");
+        return;
+      }
+
+      const courses1 = courseStructures[course][university1] || [];
+      const courses2 = courseStructures[course][university2] || [];
+
+      // Combine and sort courses
+      const allCourses = Array.from(new Set([...courses1, ...courses2])).sort();
+
+      // Clear table and populate with data
+      comparisonTable.innerHTML = "";
+      allCourses.forEach(course => {
+        const row = document.createElement("tr");
+
+        const courseNameCell = document.createElement("td");
+        courseNameCell.textContent = course;
+
+        const university1Cell = document.createElement("td");
+        university1Cell.textContent = courses1.includes(course) ? "✔️" : "❌";
+        if (!courses1.includes(course)) university1Cell.classList.add("highlight");
+
+        const university2Cell = document.createElement("td");
+        university2Cell.textContent = courses2.includes(course) ? "✔️" : "❌";
+        if (!courses2.includes(course)) university2Cell.classList.add("highlight");
+
+        row.appendChild(courseNameCell);
+        row.appendChild(university1Cell);
+        row.appendChild(university2Cell);
+        comparisonTable.appendChild(row);
+      });
+    });
+  </script>
+</body>
+</html>
