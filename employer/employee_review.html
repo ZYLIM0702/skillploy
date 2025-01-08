@@ -67,6 +67,10 @@
       align-items: center;
     }
 
+    .employee-item .info {
+      flex-grow: 1;
+    }
+
     .employee-item button {
       background-color: #0073e6;
       color: white;
@@ -146,19 +150,19 @@
   <script>
     // JavaScript Logic
 
-    // Dummy data for fresh graduates
+    // Dummy data for fresh graduates with course and job title
     const freshGradsBySector = {
       "Computer Science": [
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
+        { id: 1, name: "Alice", course: "B.Sc. in Computer Science", jobTitle: "Software Engineer" },
+        { id: 2, name: "Bob", course: "M.Sc. in Data Science", jobTitle: "Data Analyst" },
       ],
       "Finance": [
-        { id: 3, name: "Charlie" },
-        { id: 4, name: "Dave" },
+        { id: 3, name: "Charlie", course: "B.A. in Finance", jobTitle: "Financial Analyst" },
+        { id: 4, name: "Dave", course: "MBA", jobTitle: "Investment Banker" },
       ],
       "Healthcare": [
-        { id: 5, name: "Eve" },
-        { id: 6, name: "Frank" },
+        { id: 5, name: "Eve", course: "B.Sc. in Nursing", jobTitle: "Nurse" },
+        { id: 6, name: "Frank", course: "M.D.", jobTitle: "Medical Officer" },
       ],
     };
 
@@ -183,7 +187,11 @@
         const employeeItem = document.createElement("div");
         employeeItem.className = "employee-item";
         employeeItem.innerHTML = `
-          <span>${employee.name}</span>
+          <div class="info">
+            <strong>${employee.name}</strong><br>
+            Course: ${employee.course}<br>
+            Job Title: ${employee.jobTitle}
+          </div>
           <button data-id="${employee.id}" data-name="${employee.name}">Review</button>
         `;
         employeeList.appendChild(employeeItem);
