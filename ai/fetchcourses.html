@@ -45,6 +45,9 @@
             const xhr = new XMLHttpRequest();
             xhr.open('GET', apiUrl, true);
             xhr.setRequestHeader('Accept', 'application/json');
+            xhr.setRequestHeader('Cache-Control', 'no-cache'); // Prevent caching
+            xhr.setRequestHeader('Pragma', 'no-cache');
+            xhr.setRequestHeader('Upgrade-Insecure-Requests', '1'); // Request HTTP even if HTTPS is preferred
             
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
