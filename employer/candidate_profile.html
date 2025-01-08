@@ -10,56 +10,53 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7fa;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         .profile-container {
-            width: 60%;
-            margin: 50px auto;
+            width: 70%;
+            max-width: 900px;
             background-color: white;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            text-align: left;
         }
 
         h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .profile-info {
+            color: #0073e6;
             margin-bottom: 20px;
         }
 
         .profile-info p {
             font-size: 18px;
-            margin: 5px 0;
+            margin: 10px 0;
+            color: #333;
         }
 
         .skills-list {
             list-style-type: none;
-            padding-left: 0;
+            padding: 0;
         }
 
         .skills-list li {
             font-size: 16px;
-            background-color: #f0f0f0;
-            margin: 5px;
-            padding: 5px 10px;
-            border-radius: 4px;
+            background-color: #e3f2fd;
+            margin: 8px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: inline-block;
         }
 
         .skills-list li:hover {
-            background-color: #dcdcdc;
-        }
-
-        .checkbox-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            background-color: #bbdefb;
         }
 
         .checkbox-container div {
@@ -68,7 +65,7 @@
         }
 
         canvas {
-            margin-top: 30px;
+            margin-top: 40px;
         }
     </style>
 </head>
@@ -82,23 +79,19 @@
             <p><strong>Email:</strong> <span id="email"></span></p>
             <p><strong>Faculty:</strong> <span id="faculty"></span></p>
             <p><strong>Institution:</strong> <span id="institution"></span></p>
-            <p><strong>Course:</strong> <span id="courseName"></span></p> <!-- Display course name here -->
+            <p><strong>Course:</strong> <span id="courseName"></span></p>
         </div>
 
         <h3>Selected Skills:</h3>
         <div id="skillsContainer" class="checkbox-container"></div>
 
-        <!-- Radar chart canvas -->
         <canvas id="radarChart" width="400" height="400"></canvas>
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
-        import { db } from "../firebase-config.js"; // Firebase config file
+        import { db } from "../firebase-config.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        // Reference to the 'students' collection in Firebase Firestore
-        // Get the applicantId from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const studentId = urlParams.get('studentId');
 
@@ -106,98 +99,68 @@
             console.error("studentId is missing from the URL");
         }
 
-        // Use this applicantId to fetch the student's data from Firebase
-        const studentRef = doc(db, "Students", studentId); // Dynamic reference using applicantId
+        const studentRef = doc(db, "Students", studentId);
 
-
-        // Fetch course name based on course ID
         const fetchCourseName = async (courseId) => {
             try {
                 const courseRef = doc(db, "Courses", courseId);
                 const courseDoc = await getDoc(courseRef);
-
                 if (courseDoc.exists()) {
-                    const courseData = courseDoc.data();
-                    document.getElementById('courseName').textContent = courseData.title;
-                } else {
-                    console.log('No course data found.');
+                    document.getElementById('courseName').textContent = courseDoc.data().title;
                 }
             } catch (error) {
                 console.error('Error fetching course name:', error);
             }
         };
 
-        // Fetch skills data from the student's document
         const fetchSkills = async () => {
             try {
                 const studentDoc = await getDoc(studentRef);
-
                 if (studentDoc.exists()) {
                     const studentData = studentDoc.data();
-
-                    // Assuming 'selectedSkills' contains an array of skill IDs
                     const selectedSkills = studentData.selectedSkills || [];
-
-                    // Check if there are any skills in the student's selectedSkills array
                     if (selectedSkills.length > 0) {
                         let skillsNames = [];
                         let skillsScores = [];
-
-                        // Fetch the corresponding skill names for each skill ID
                         for (const skillId of selectedSkills) {
                             const skillDoc = await getDoc(doc(db, "Skills", skillId));
                             if (skillDoc.exists()) {
-                                const skillData = skillDoc.data();
-                                skillsNames.push(skillData.name); // Add skill name to the array
-
-                                // Generate a random score between 0 and 100, normalize to a scale of 10
+                                skillsNames.push(skillDoc.data().name);
                                 const score = Math.floor(Math.random() * 101);
-                                skillsScores.push(score / 10); // Normalize to scale of 10
+                                skillsScores.push(score / 10);
                             }
                         }
-
-                        // Display the skills as comma-separated values
-                        const skillsText = skillsNames.join(', ');
-                        createSkillsItem(skillsText); // Display the skills
-
-                        // Create the radar chart with the skills data
+                        createSkillsItem(skillsNames.join(', '));
                         createRadarChart(skillsNames, skillsScores);
                     } else {
                         const row = document.createElement('div');
                         row.textContent = 'No skills acquired yet';
                         document.getElementById('skillsContainer').appendChild(row);
                     }
-
-                    // Fetch and display course name
-                    const courseId = studentData.courseId;
-                    fetchCourseName(courseId);
-                } else {
-                    console.log('No student data found.');
+                    fetchCourseName(studentData.courseId);
                 }
             } catch (error) {
                 console.error('Error fetching skills:', error);
             }
         };
 
-        // Create and display the skills as a single comma-separated string
         const createSkillsItem = (skillsText) => {
             const skillItem = document.createElement('div');
-            skillItem.textContent = skillsText; // Display the comma-separated skills
+            skillItem.textContent = skillsText;
             document.getElementById('skillsContainer').appendChild(skillItem);
         };
 
-        // Function to create the radar chart
         const createRadarChart = (labels, data) => {
             const ctx = document.getElementById('radarChart').getContext('2d');
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: labels, // Skill names as labels
+                    labels: labels,
                     datasets: [{
                         label: 'Skill Scores',
-                        data: data, // Normalized scores for each skill
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)', // Light blue background color
-                        borderColor: 'rgba(54, 162, 235, 1)', // Blue border color
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -205,7 +168,7 @@
                     scale: {
                         ticks: {
                             beginAtZero: true,
-                            max: 10, // Max score of 10 (normalized)
+                            max: 10,
                             stepSize: 1
                         }
                     }
@@ -213,28 +176,21 @@
             });
         };
 
-        // Function to populate the profile page with student data
         const populateProfile = async () => {
             try {
                 const studentDoc = await getDoc(studentRef);
-
                 if (studentDoc.exists()) {
                     const studentData = studentDoc.data();
-
-                    // Set profile data dynamically
                     document.getElementById('name').textContent = studentData.name;
                     document.getElementById('email').textContent = studentData.email;
                     document.getElementById('faculty').textContent = studentData.faculty;
                     document.getElementById('institution').textContent = studentData.institution;
-                } else {
-                    console.log('No student data found.');
                 }
             } catch (error) {
                 console.error('Error fetching student data:', error);
             }
         };
 
-        // Call the functions to populate the profile and fetch skills
         populateProfile();
         fetchSkills();
     </script>

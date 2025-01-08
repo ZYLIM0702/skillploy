@@ -6,6 +6,25 @@
     <title>Employer Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Function to load header and footer
+        function loadHeaderFooter() {
+            // Load the header
+            fetch('header.html')
+                .then(response => response.text())
+                .then(data => document.getElementById('header').innerHTML = data);
+
+            // Load the footer
+            fetch('footer.html')
+                .then(response => response.text())
+                .then(data => document.getElementById('footer').innerHTML = data);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+    </script>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -34,35 +53,144 @@
             margin-left: 250px;
             padding: 40px;
         }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
         iframe {
             width: 100%;
-            height: 85vh;
+            height: 95vh;
             border: none;
         }
     </style>
 </head>
 <body>
+    <div id="header" style="padding-bottom: 100px; background-color: #2124B1;"></div>
     <div class="sidebar">
         <h3 class="text-center py-3">SkillPloy</h3>
-        <a href="home.html" class="active" target="content-frame"><i class="fas fa-chart-line me-2"></i> Home (Insight)</a>
-        <a href="job_listing.html" target="content-frame"><i class="fas fa-briefcase me-2"></i> Job Listing</a>
-        <a href="employer/post_job.html" target="content-frame"><i class="fas fa-plus-square me-2"></i> Post Job</a>
-        <a href="submit_skills.html" target="content-frame"><i class="fas fa-upload me-2"></i> Submit Skills</a>
-        <a href="employee_review.html" target="content-frame"><i class="fas fa-user-check me-2"></i> Employee Review</a>
-        <a href="logout.html" target="content-frame"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+        <a href="#" class="active" onclick="loadPage('home.html', this)"><i class="fas fa-chart-line me-2"></i> Home (Insight)</a>
+        <a href="#" onclick="loadPage('employer/list_jobs.html', this)"><i class="fas fa-briefcase me-2"></i> Job Listing</a>
+        <a href="#" onclick="loadPage('employer/post_job.html', this)"><i class="fas fa-plus-square me-2"></i> Post Job</a>
+        <a href="#" onclick="loadPage('employer/submit_skills.html', this)"><i class="fas fa-upload me-2"></i> Submit Skills</a>
+        <a href="#" onclick="loadPage('employer/employee_review.html', this)"><i class="fas fa-user-check me-2"></i> Employee Review</a>
+        <a href="#" onclick="loadPage('logout.html', this)"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
     </div>
 
     <div class="content">
-        <iframe src="home.html" name="content-frame" id="content-frame"></iframe>
+        <div id="home-section">
+            <h1 class="mb-4">Dashboard Overview</h1>
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <div class="dashboard-card">
+                        <h5>Total Jobs Posted</h5>
+                        <h2>24</h2>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="dashboard-card">
+                        <h5>Total Employees</h5>
+                        <h2>520</h2>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="dashboard-card">
+                        <h5>Active Applications</h5>
+                        <h2>18</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <div class="dashboard-card">
+                        <h5>Recent Job Posts</h5>
+                        <table class="table table-striped mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Status</th>
+                                    <th>Applicants</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Data Scientist</td>
+                                    <td><span class="badge bg-success">Open</span></td>
+                                    <td>12</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm">View</button>
+                                        <button class="btn btn-danger btn-sm">Close</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Senior Cloud Engineer</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>6</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm">View</button>
+                                        <button class="btn btn-danger btn-sm">Close</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <canvas id="jobsChart"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h5>Notifications</h5>
+                        <ul>
+                            <li>New applicant for Data Scientist</li>
+                            <li>Review pending for 3 candidates</li>
+                            <li>Job post expiring soon</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <iframe src="home.html" name="content-frame" id="content-frame" style="display:none;"></iframe>
     </div>
 
     <script>
-        const links = document.querySelectorAll('.sidebar a');
-        links.forEach(link => {
-            link.addEventListener('click', function(e) {
-                links.forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-            });
+
+        function loadPage(page, element) {
+            const frame = document.getElementById('content-frame');
+            const homeSection = document.getElementById('home-section');
+
+            if (page === 'home.html') {
+                homeSection.style.display = 'block';
+                frame.style.display = 'none';
+            } else {
+                homeSection.style.display = 'none';
+                frame.src = page;
+                frame.style.display = 'block';
+            }
+
+            const links = document.querySelectorAll('.sidebar a');
+            links.forEach(l => l.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        const ctx = document.getElementById('jobsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['January', 'February', 'March', 'April'],
+                datasets: [{
+                    label: 'Jobs Posted',
+                    data: [10, 20, 30, 20],
+                    backgroundColor: '#4777F5'
+                }]
+            }
         });
     </script>
 </body>

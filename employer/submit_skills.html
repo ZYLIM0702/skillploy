@@ -1,74 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employer Skill Submission Module</title>
+  <title>Skill Submission</title>
   <style>
-    /* CSS Styles */
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      background-color: #f4f7fa;
     }
 
     header {
+      border-radius: 15px;
       background-color: #0073e6;
       color: white;
       text-align: center;
-      padding: 1em 0;
+      padding: 1.5em 0;
+      margin: 20px auto;
+      width: 90%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     main {
-      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 70vh;
     }
 
     form {
       display: flex;
       flex-direction: column;
-      max-width: 400px;
-      margin: 0 auto;
+      width: 800px;
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     }
 
     form label {
-      margin-top: 10px;
+      margin-top: 15px;
+      font-weight: 500;
     }
 
-    form input, form textarea, form button, form select {
-      margin-top: 5px;
-      padding: 8px;
+    form input,
+    form textarea,
+    form button,
+    form select {
+      margin-top: 10px;
+      padding: 12px;
       font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
     }
 
     form button {
-      margin-top: 15px;
+      margin-top: 25px;
       background-color: #0073e6;
       color: white;
+      font-weight: 600;
       border: none;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
 
     form button:hover {
       background-color: #005bb5;
     }
+
+    h2 {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
+
 <body>
   <header>
-    <h1>Employer Skill Submission Module</h1>
+    <h1>Skill Submission</h1>
   </header>
 
   <main>
-    <!-- Submit New Skills Form -->
     <section id="skill-form">
-      <h2>Submit a New Skill</h2>
       <form id="submitSkillForm">
+        <h2 style="text-align: center;">Submit a New Skill</h2>
+        
         <label for="skillName">Skill Name:</label>
         <input type="text" id="skillName" name="skillName" required>
 
         <label for="skillDescription">Skill Description:</label>
-        <textarea id="skillDescription" name="skillDescription" required></textarea>
+        <textarea id="skillDescription" name="skillDescription" rows="5" required></textarea>
 
         <label for="skillSector">Sector:</label>
         <select id="skillSector" name="skillSector" required>
@@ -87,22 +111,18 @@
   </main>
 
   <script type="module">
-    // Import Firebase configuration and Firestore modules
     import { db } from '../firebase-config.js';
     import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // Form Submission Logic for New Skills
     document.getElementById("submitSkillForm").addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      // Get form data
       const skillName = document.getElementById("skillName").value;
       const skillDescription = document.getElementById("skillDescription").value;
       const skillSector = document.getElementById("skillSector").value;
       const relatedLinksInput = document.getElementById("relatedLinks").value;
       const relatedLinks = relatedLinksInput.split(",").map(link => link.trim());
 
-      // Create skill object
       const newSkill = {
         description: skillDescription,
         name: skillName,
@@ -111,10 +131,7 @@
       };
 
       try {
-        // Add skill to Firestore
         await addDoc(collection(db, "Skills"), newSkill);
-
-        // Success message
         alert("Skill submitted successfully!");
         document.getElementById("submitSkillForm").reset();
       } catch (error) {
@@ -124,4 +141,5 @@
     });
   </script>
 </body>
+
 </html>

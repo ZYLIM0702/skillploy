@@ -111,6 +111,51 @@
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 999;
     }
+
+
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 800px;
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    form label {
+      margin-top: 15px;
+      font-weight: 500;
+    }
+
+    form input,
+    form textarea,
+    form button,
+    form select {
+      margin-top: 10px;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    form button {
+      margin-top: 25px;
+      background-color: #0073e6;
+      color: white;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    form button:hover {
+      background-color: #005bb5;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 
@@ -147,112 +192,131 @@
 
   </main>
   <script type="module">
-    import { db } from '../firebase-config.js';
-    import { collection, query, where, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    const sectorDropdown = document.getElementById("sector");
-    const employeeList = document.getElementById("employeeList");
-    const reviewModal = document.getElementById("reviewModal");
-    const modalOverlay = document.getElementById("modalOverlay");
-    const reviewForm = document.getElementById("reviewForm");
-    const reviewText = document.getElementById("reviewText");
-    const ratingValue = document.getElementById("ratingValue");
-    let currentEmployee = null;
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { db, auth } from '../firebase-config.js';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    sectorDropdown.addEventListener("change", async function () {
-      const selectedSector = this.value;
+// Capture and Store User ID after Authentication
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        localStorage.setItem('currentUserId', user.uid);  // Store in local storage
+    } else {
+        localStorage.removeItem('currentUserId');  // Clear if logged out
+    }
+});
 
-      employeeList.innerHTML = "<p>Loading...</p>";
+const sectorDropdown = document.getElementById("sector");
+const employeeList = document.getElementById("employeeList");
+const reviewModal = document.getElementById("reviewModal");
+const modalOverlay = document.getElementById("modalOverlay");
+const reviewForm = document.getElementById("reviewForm");
+const reviewText = document.getElementById("reviewText");
+const ratingValue = document.getElementById("ratingValue");
+let currentEmployee = null;
 
-      try {
+// Fetch Students Based on Selected Sector
+sectorDropdown.addEventListener("change", async function () {
+    const selectedSector = this.value;
+    employeeList.innerHTML = "<p>Loading...</p>";
+
+    try {
         const studentsQuery = query(
-          collection(db, "Students"),
-          where("faculty", "==", selectedSector)
+            collection(db, "Students"),
+            where("faculty", "==", selectedSector)
         );
         const studentSnapshots = await getDocs(studentsQuery);
         employeeList.innerHTML = "";
 
         if (studentSnapshots.empty) {
-          employeeList.innerHTML = "<p>No students found for this sector.</p>";
+            employeeList.innerHTML = "<p>No students found for this sector.</p>";
         } else {
-          for (const studentDoc of studentSnapshots.docs) {
-            const student = studentDoc.data();
-            const courseDocRef = doc(db, "Courses", student.courseId);
-            const courseDoc = await getDoc(courseDocRef);
-            const courseName = courseDoc.exists() ? courseDoc.data().title : "Unknown Course";
+            for (const studentDoc of studentSnapshots.docs) {
+                const student = studentDoc.data();
+                const courseDocRef = doc(db, "Courses", student.courseId);
+                const courseDoc = await getDoc(courseDocRef);
+                const courseName = courseDoc.exists() ? courseDoc.data().title : "Unknown Course";
 
-            const employeeItem = document.createElement("div");
-            employeeItem.className = "employee-item";
-            employeeItem.innerHTML = `
-          <div class="info">
-            <strong>${student.name}</strong><br>
-            Course: ${courseName}
-          </div>
-          <button data-id="${studentDoc.id}" data-name="${student.name}" data-course="${student.courseId}">Review</button>
-        `;
-            employeeList.appendChild(employeeItem);
-          }
+                const employeeItem = document.createElement("div");
+                employeeItem.className = "employee-item";
+                employeeItem.innerHTML = `
+                <div class="info">
+                    <strong>${student.name}</strong><br>
+                    Course: ${courseName}
+                </div>
+                <button data-id="${studentDoc.id}" data-name="${student.name}" data-course="${student.courseId}">Review</button>
+                `;
+                employeeList.appendChild(employeeItem);
+            }
 
-          document.querySelectorAll(".employee-item button").forEach(button => {
-            button.addEventListener("click", function () {
-              currentEmployee = {
-                id: this.getAttribute("data-id"),
-                name: this.getAttribute("data-name"),
-                courseId: this.getAttribute("data-course"),
-              };
-              openReviewModal();
+            document.querySelectorAll(".employee-item button").forEach(button => {
+                button.addEventListener("click", function () {
+                    currentEmployee = {
+                        id: this.getAttribute("data-id"),
+                        name: this.getAttribute("data-name"),
+                        courseId: this.getAttribute("data-course"),
+                    };
+                    openReviewModal();
+                });
             });
-          });
         }
-      } catch (error) {
+    } catch (error) {
         console.error("Error fetching students: ", error);
         employeeList.innerHTML = "<p>Error loading students. Please try again later.</p>";
-      }
-    });
-
-    function openReviewModal() {
-      reviewText.value = "";
-      ratingValue.value = "";
-      reviewModal.style.display = "block";
-      modalOverlay.style.display = "block";
     }
+});
 
-    function closeReviewModal() {
-      reviewModal.style.display = "none";
-      modalOverlay.style.display = "none";
-    }
+function openReviewModal() {
+    reviewText.value = "";
+    ratingValue.value = "";
+    reviewModal.style.display = "block";
+    modalOverlay.style.display = "block";
+}
 
-    reviewForm.addEventListener("submit", async function (e) {
-      e.preventDefault();
+function closeReviewModal() {
+    reviewModal.style.display = "none";
+    modalOverlay.style.display = "none";
+}
 
-      const reviewContent = reviewText.value;
-      const rating = parseInt(ratingValue.value);
+// Submit Review with Logged-in User ID
+reviewForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-      if (!rating || rating < 1 || rating > 5) {
+    const reviewContent = reviewText.value;
+    const rating = parseInt(ratingValue.value);
+    const currentUserId = localStorage.getItem('currentUserId');  // Get user ID from local storage
+
+    if (!rating || rating < 1 || rating > 5) {
         alert("Please enter a valid rating between 1 and 5.");
         return;
-      }
+    }
 
-      try {
+    if (!currentUserId) {
+        alert("User not logged in. Please log in to submit a review.");
+        return;
+    }
+
+    try {
         const courseDocRef = doc(db, "Courses", currentEmployee.courseId);
         await updateDoc(courseDocRef, {
-          feedbacks: arrayUnion({
-            comment: reviewContent,
-            rating: rating,
-            submittedById: "E12345", // Fixed value
-            submittedByType: "employer", // Fixed value
-          }),
+            feedbacks: arrayUnion({
+                comment: reviewContent,
+                rating: rating,
+                submittedById: currentUserId,  // Use logged-in user's ID
+                submittedByType: "employer",   // Fixed value
+            }),
         });
 
         alert(`Review submitted for ${currentEmployee.name}!`);
         closeReviewModal();
-      } catch (error) {
+    } catch (error) {
         console.error("Error submitting review: ", error);
         alert("Failed to submit review. Please try again.");
-      }
-    });
+    }
+});
 
-    modalOverlay.addEventListener("click", closeReviewModal);
+modalOverlay.addEventListener("click", closeReviewModal);
+
   </script>
 </body>
 

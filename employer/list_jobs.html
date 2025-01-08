@@ -6,32 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Listings</title>
     <style>
-        /* CSS Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            background-color: #f4f7fa;
         }
 
         header {
+            border-radius: 20px;
             background-color: #0073e6;
             color: white;
             text-align: center;
             padding: 1em 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         main {
             padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
         }
 
         .job-card {
-            border: 1px solid #ccc;
+            border: none;
             padding: 15px;
             margin-bottom: 15px;
-            border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
             cursor: pointer;
+            background-color: white;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .job-card:hover {
+            transform: translateY(-5px);
         }
 
         .job-card h3 {
@@ -43,18 +56,26 @@
             margin: 5px 0;
         }
 
-        /* Slide-out Bar */
+        .job-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
         #slideOutBar {
             position: fixed;
             top: 0;
-            right: -300px;
-            width: 300px;
+            right: -460px;
+            width: 400px;
             height: 100%;
-            background-color: #f4f4f4;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            background-color: #fff;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             transition: right 0.3s ease-in-out;
             z-index: 9999;
+            border-radius: 15px;
         }
 
         #slideOutBar.open {
@@ -66,44 +87,28 @@
             color: #0073e6;
         }
 
-        #applicantList {
-            margin-top: 20px;
-        }
-
         #applicantList ul {
             list-style: none;
             padding: 0;
         }
 
         #applicantList li {
-            padding: 8px;
-            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
         }
 
         #closeBar {
             background-color: #0073e6;
             color: white;
             border: none;
-            padding: 10px;
-            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
             cursor: pointer;
+            width: 100%;
         }
 
         #closeBar:hover {
             background-color: #005bb5;
-        }
-
-        .job-image {
-            width: 80%;
-            /* Ensures the image spans the width of the container */
-            height: 200px;
-            /* Fixes the height of the image */
-            object-fit: contain;
-            /* Ensures the image is cropped appropriately to fit the fixed dimensions */
-            border-radius: 5px;
-            /* Adds rounded corners */
-            margin-bottom: 10px;
-            /* Adds spacing below the image */
         }
     </style>
 </head>
@@ -120,7 +125,6 @@
         </section>
     </main>
 
-    <!-- Slide-out Bar -->
     <div id="slideOutBar">
         <h2>Applicants</h2>
         <div id="applicantList">
@@ -131,21 +135,15 @@
 
     <script type="module">
         import { db } from '../firebase-config.js';
-        import {
-            collection,
-            getDocs,
-            doc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
         const slideOutBar = document.getElementById('slideOutBar');
         const applicantList = document.getElementById('applicantList').querySelector('ul');
         const closeBarButton = document.getElementById('closeBar');
 
-        // Function to fetch and display jobs
         async function fetchAndDisplayJobs() {
             const jobCardsContainer = document.getElementById('jobCardsContainer');
-            jobCardsContainer.innerHTML = ''; // Clear previous job cards
+            jobCardsContainer.innerHTML = '';
 
             try {
                 const jobsQuerySnapshot = await getDocs(collection(db, "Jobs"));
@@ -165,7 +163,7 @@
                 <p><strong>Salary:</strong> ${job.salary}</p>
                 <p><strong>Description:</strong> ${job.description}</p>
             `;
-                    jobCard.addEventListener('click', () => openSlideOutBar(doc.id)); // Open slide-out bar on click
+                    jobCard.addEventListener('click', () => openSlideOutBar(doc.id));
                     jobCardsContainer.appendChild(jobCard);
                 });
             } catch (error) {
@@ -174,40 +172,30 @@
             }
         }
 
-
-        // Function to open the slide-out bar and fetch applicants
         async function openSlideOutBar(jobId) {
             try {
                 const jobDoc = await getDoc(doc(db, "Jobs", jobId));
 
                 if (jobDoc.exists()) {
                     const job = jobDoc.data();
-                    const applicants = job.applicants || []; // Get applicants from the job
-
-                    // Clear previous applicants
+                    const applicants = job.applicants || [];
                     applicantList.innerHTML = '';
 
                     if (applicants.length > 0) {
                         for (const applicantId of applicants) {
                             if (applicantId) {
-                                const studentDoc = await getDoc(doc(db, "Students", applicantId)); // Create reference
+                                const studentDoc = await getDoc(doc(db, "Students", applicantId));
                                 if (studentDoc.exists()) {
                                     const student = studentDoc.data();
                                     const listItem = document.createElement('li');
                                     listItem.innerHTML = `<a href="candidate_profile.html?studentId=${studentDoc.id}" style="text-decoration: none; color: inherit;">${student.name}</a>`;
                                     applicantList.appendChild(listItem);
-                                } else {
-                                    console.error(`Student document not found: ${applicantId}`);
                                 }
                             }
                         }
-
-
                     } else {
                         applicantList.innerHTML = '<li>No applicants for this job.</li>';
                     }
-
-                    // Open the slide-out bar
                     slideOutBar.classList.add('open');
                 }
             } catch (error) {
@@ -216,12 +204,10 @@
             }
         }
 
-        // Close the slide-out bar
         closeBarButton.addEventListener('click', () => {
             slideOutBar.classList.remove('open');
         });
 
-        // Load jobs on page load
         fetchAndDisplayJobs();
     </script>
 </body>

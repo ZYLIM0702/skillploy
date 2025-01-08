@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In & Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+        }
+        .container {
+            margin-top: 50px;
+            background: #fff;
+            color: #000;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .left-panel, .right-panel {
+            padding: 30px;
+        }
+        .btn-primary {
+            background-color: #2575fc;
+            border-color: #2575fc;
+        }
+        .btn-primary:hover {
+            background-color: #6a11cb;
+            border-color: #6a11cb;
+        }
+    </style>
+    <script type="module">
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { doc, getDoc, setDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { db, auth } from '../firebase-config.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sign In Logic
+            document.getElementById('signin-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signin-email').value;
+                const password = document.getElementById('signin-password').value;
+                const accountType = document.getElementById('signin-account-type').value;
+
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    const collectionName = accountType.charAt(0).toUpperCase() + accountType.slice(1) + 's';
+                    const userDocRef = doc(db, collectionName, user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userDoc.exists()) {
+                        document.cookie = `user=${JSON.stringify(userDoc.data())}; path=/; max-age=86400;`;
+                        alert('Successfully signed in!');
+                        window.location.href = '/dashboard.html';
+                    } else {
+                        alert('No account found for this user type.');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+
+            // Sign Up Logic
+            document.getElementById('signup-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const accountType = document.getElementById('signup-account-type').value;
+                const name = document.getElementById('signup-name').value;
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    const collectionName = accountType.charAt(0).toUpperCase() + accountType.slice(1) + 's';
+                    const userDocRef = doc(db, collectionName, user.uid);
+
+                    const userData = { name, email, accountType };
+                    await setDoc(userDocRef, userData);
+
+                    alert('Account created successfully!');
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <!-- Sign In Section -->
+            <div class="col-md-6 left-panel">
+                <h2 class="text-center">Sign In</h2>
+                <form id="signin-form">
+                    <div class="mb-3">
+                        <label for="signin-email" class="form-label">Email</label>
+                        <input type="email" id="signin-email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signin-password" class="form-label">Password</label>
+                        <input type="password" id="signin-password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signin-account-type" class="form-label">Account Type</label>
+                        <select id="signin-account-type" class="form-select" required>
+                            <option value="student">Student</option>
+                            <option value="lecturer">Lecturer</option>
+                            <option value="employer">Employer</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                </form>
+            </div>
+
+            <!-- Sign Up Section -->
+            <div class="col-md-6 right-panel">
+                <h2 class="text-center">Sign Up</h2>
+                <form id="signup-form">
+                    <div class="mb-3">
+                        <label for="signup-name" class="form-label">Full Name</label>
+                        <input type="text" id="signup-name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signup-email" class="form-label">Email</label>
+                        <input type="email" id="signup-email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signup-password" class="form-label">Password</label>
+                        <input type="password" id="signup-password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signup-account-type" class="form-label">Account Type</label>
+                        <select id="signup-account-type" class="form-select" required>
+                            <option value="student">Student</option>
+                            <option value="lecturer">Lecturer</option>
+                            <option value="employer">Employer</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
