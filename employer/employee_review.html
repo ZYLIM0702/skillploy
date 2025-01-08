@@ -5,42 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employer Feedback Feature</title>
   <style>
-    /* CSS Styles */
+    /* CSS Styles (unchanged) */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     header {
       background-color: #0073e6;
       color: white;
       text-align: center;
       padding: 1em 0;
     }
-
     main {
       padding: 20px;
     }
-
     form {
       display: flex;
       flex-direction: column;
       max-width: 400px;
       margin: 0 auto;
     }
-
     form label {
       margin-top: 10px;
     }
-
     form textarea, form select, form button {
       margin-top: 5px;
       padding: 8px;
       font-size: 1rem;
     }
-
     form button {
       margin-top: 15px;
       background-color: #0073e6;
@@ -48,15 +42,12 @@
       border: none;
       cursor: pointer;
     }
-
     form button:hover {
       background-color: #005bb5;
     }
-
     #employeeList {
       margin-top: 20px;
     }
-
     .employee-item {
       border: 1px solid #ccc;
       padding: 15px;
@@ -66,11 +57,9 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .employee-item .info {
       flex-grow: 1;
     }
-
     .employee-item button {
       background-color: #0073e6;
       color: white;
@@ -79,11 +68,9 @@
       cursor: pointer;
       border-radius: 4px;
     }
-
     .employee-item button:hover {
       background-color: #005bb5;
     }
-
     #reviewModal {
       display: none;
       position: fixed;
@@ -97,7 +84,6 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       z-index: 1000;
     }
-
     #modalOverlay {
       display: none;
       position: fixed;
@@ -114,29 +100,22 @@
   <header>
     <h1>Employer Feedback Feature</h1>
   </header>
-
   <main>
-    <!-- Select Sector -->
     <section id="selectSector">
       <h2>Select Sector</h2>
       <form>
         <label for="sector">Sector:</label>
         <select id="sector" name="sector" required>
           <option value="" disabled selected>Select a sector</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="Finance">Finance</option>
-          <option value="Healthcare">Healthcare</option>
+          <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+          <option value="Faculty of Medicine">Faculty of Medicine</option>
+          <option value="Faculty of Finance">Faculty of Finance</option>
         </select>
       </form>
     </section>
-
-    <!-- List of Fresh Grad Employees -->
     <section id="employeeList">
       <h2>Fresh Graduates</h2>
-      <!-- Dynamic list of employees will be rendered here -->
     </section>
-
-    <!-- Review Modal -->
     <div id="modalOverlay"></div>
     <div id="reviewModal">
       <h2>Write a Review</h2>
@@ -146,25 +125,9 @@
       </form>
     </div>
   </main>
-
-  <script>
-    // JavaScript Logic
-
-    // Dummy data for fresh graduates with course and job title
-    const freshGradsBySector = {
-      "Computer Science": [
-        { id: 1, name: "Alice", course: "B.Sc. in Computer Science", jobTitle: "Software Engineer" },
-        { id: 2, name: "Bob", course: "M.Sc. in Data Science", jobTitle: "Data Analyst" },
-      ],
-      "Finance": [
-        { id: 3, name: "Charlie", course: "B.A. in Finance", jobTitle: "Financial Analyst" },
-        { id: 4, name: "Dave", course: "MBA", jobTitle: "Investment Banker" },
-      ],
-      "Healthcare": [
-        { id: 5, name: "Eve", course: "B.Sc. in Nursing", jobTitle: "Nurse" },
-        { id: 6, name: "Frank", course: "M.D.", jobTitle: "Medical Officer" },
-      ],
-    };
+  <script type="module">
+    import { db } from '../firebase-config.js';
+    import {collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     const sectorDropdown = document.getElementById("sector");
     const employeeList = document.getElementById("employeeList");
@@ -172,70 +135,78 @@
     const modalOverlay = document.getElementById("modalOverlay");
     const reviewForm = document.getElementById("reviewForm");
     const reviewText = document.getElementById("reviewText");
-    let currentEmployee = null; // To track the employee being reviewed
+    let currentEmployee = null;
 
-    // Handle sector selection
-    sectorDropdown.addEventListener("change", function () {
+    sectorDropdown.addEventListener("change", async function () {
       const selectedSector = this.value;
-      const freshGrads = freshGradsBySector[selectedSector] || [];
 
-      // Clear previous list
-      employeeList.innerHTML = "";
+      employeeList.innerHTML = "<p>Loading...</p>";
 
-      // Populate fresh grad list
-      freshGrads.forEach(employee => {
-        const employeeItem = document.createElement("div");
-        employeeItem.className = "employee-item";
-        employeeItem.innerHTML = `
-          <div class="info">
-            <strong>${employee.name}</strong><br>
-            Course: ${employee.course}<br>
-            Job Title: ${employee.jobTitle}
-          </div>
-          <button data-id="${employee.id}" data-name="${employee.name}">Review</button>
-        `;
-        employeeList.appendChild(employeeItem);
-      });
+      try {
+        const studentsQuery = query(
+          collection(db, "Students"),
+          where("faculty", "==", selectedSector)
+        );
+        const studentSnapshots = await getDocs(studentsQuery);
+        employeeList.innerHTML = "";
 
-      // Attach event listeners to Review buttons
-      document.querySelectorAll(".employee-item button").forEach(button => {
-        button.addEventListener("click", function () {
-          currentEmployee = {
-            id: this.getAttribute("data-id"),
-            name: this.getAttribute("data-name"),
-          };
-          openReviewModal();
-        });
-      });
+        if (studentSnapshots.empty) {
+          employeeList.innerHTML = "<p>No students found for this sector.</p>";
+        } else {
+          for (const studentDoc of studentSnapshots.docs) {
+            const student = studentDoc.data();
+            const courseDocRef = doc(db, "Courses", student.courseId);
+            const courseDoc = await getDoc(courseDocRef);
+            const courseName = courseDoc.exists() ? courseDoc.data().title : "Unknown Course";
+
+            const employeeItem = document.createElement("div");
+            employeeItem.className = "employee-item";
+            employeeItem.innerHTML = `
+              <div class="info">
+                <strong>${student.name}</strong><br>
+                Course: ${courseName}
+              </div>
+              <button data-id="${studentDoc.id}" data-name="${student.name}">Review</button>
+            `;
+            employeeList.appendChild(employeeItem);
+          }
+
+          document.querySelectorAll(".employee-item button").forEach(button => {
+            button.addEventListener("click", function () {
+              currentEmployee = {
+                id: this.getAttribute("data-id"),
+                name: this.getAttribute("data-name"),
+              };
+              openReviewModal();
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching students: ", error);
+        employeeList.innerHTML = "<p>Error loading students. Please try again later.</p>";
+      }
     });
 
-    // Open review modal
     function openReviewModal() {
-      reviewText.value = ""; // Clear previous review text
+      reviewText.value = "";
       reviewModal.style.display = "block";
       modalOverlay.style.display = "block";
     }
 
-    // Close review modal
     function closeReviewModal() {
       reviewModal.style.display = "none";
       modalOverlay.style.display = "none";
     }
 
-    // Handle review submission
     reviewForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
       const reviewContent = reviewText.value;
-
-      // Log review to the console or send to the server
       console.log(`Review for ${currentEmployee.name}: ${reviewContent}`);
-
       alert(`Review submitted for ${currentEmployee.name}!`);
       closeReviewModal();
     });
 
-    // Close modal on overlay click
     modalOverlay.addEventListener("click", closeReviewModal);
   </script>
 </body>
