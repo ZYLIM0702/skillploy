@@ -35,21 +35,25 @@
             const source = sourceSelect.value;
             const searchTerm = document.getElementById('searchTerm').value;
             
-            let apiUrl = 'http://limhouse.tplinkdns.com:1234/'; // Enforce HTTP only
+            let apiUrl = new URL('http://limfamily.synology.me:1234/'); // Enforce HTTP only
             if (source === 'mdec') {
-                apiUrl += 'mdec';
+                apiUrl.pathname += 'mdec';
             } else if (source === 'coursera') {
-                apiUrl += `coursera?search=${encodeURIComponent(searchTerm)}`;
+                apiUrl.pathname += 'coursera';
+                apiUrl.searchParams.set('search', searchTerm);
             }
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                });
+            const options = {
+                base: 'http://limfamily.synology.me:1234/',
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+            };
 
+            try {
+                const response = await fetch(apiUrl, options);
+                
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status}`);
                 }
