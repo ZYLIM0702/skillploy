@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,6 +65,10 @@
             display: flex;
             align-items: center;
         }
+
+        canvas {
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
@@ -78,11 +85,12 @@
 
     <h3>Selected Skills:</h3>
     <div id="skillsContainer" class="checkbox-container"></div>
+
+    <!-- Radar chart canvas -->
+    <canvas id="radarChart" width="400" height="400"></canvas>
 </div>
 
 <!-- Firebase SDK -->
-
-
 <script type="module">
     import { db } from "../firebase-config.js"; // Firebase config file
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -98,7 +106,7 @@
 
             if (courseDoc.exists()) {
                 const courseData = courseDoc.data();
-                document.getElementById('courseName').textContent = courseData.name; // Set the course name
+                document.getElementById('courseName').textContent = courseData.title;
             } else {
                 console.log('No course data found.');
             }
@@ -110,7 +118,6 @@
     // Fetch skills data from the student's document
     const fetchSkills = async () => {
         try {
-            // Get the student's document data
             const studentDoc = await getDoc(studentRef);
 
             if (studentDoc.exists()) {
@@ -122,29 +129,36 @@
                 // Check if there are any skills in the student's selectedSkills array
                 if (selectedSkills.length > 0) {
                     let skillsNames = [];
+                    let skillsScores = [];
 
                     // Fetch the corresponding skill names for each skill ID
                     for (const skillId of selectedSkills) {
-                        const skillDoc = await getDoc(doc(db, "Skills", skillId)); // Fetch the skill document
+                        const skillDoc = await getDoc(doc(db, "Skills", skillId));
                         if (skillDoc.exists()) {
                             const skillData = skillDoc.data();
                             skillsNames.push(skillData.name); // Add skill name to the array
+
+                            // Generate a random score between 0 and 100, normalize to a scale of 10
+                            const score = Math.floor(Math.random() * 101);
+                            skillsScores.push(score / 10); // Normalize to scale of 10
                         }
                     }
 
                     // Display the skills as comma-separated values
                     const skillsText = skillsNames.join(', ');
                     createSkillsItem(skillsText); // Display the skills
+
+                    // Create the radar chart with the skills data
+                    createRadarChart(skillsNames, skillsScores);
                 } else {
                     const row = document.createElement('div');
                     row.textContent = 'No skills acquired yet';
-                    skillsContainer.appendChild(row);
+                    document.getElementById('skillsContainer').appendChild(row);
                 }
 
                 // Fetch and display course name
                 const courseId = studentData.courseId;
                 fetchCourseName(courseId);
-
             } else {
                 console.log('No student data found.');
             }
@@ -157,8 +171,34 @@
     const createSkillsItem = (skillsText) => {
         const skillItem = document.createElement('div');
         skillItem.textContent = skillsText; // Display the comma-separated skills
+        document.getElementById('skillsContainer').appendChild(skillItem);
+    };
 
-        skillsContainer.appendChild(skillItem);
+    // Function to create the radar chart
+    const createRadarChart = (labels, data) => {
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels, // Skill names as labels
+                datasets: [{
+                    label: 'Skill Scores',
+                    data: data, // Normalized scores for each skill
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)', // Light blue background color
+                    borderColor: 'rgba(54, 162, 235, 1)', // Blue border color
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scale: {
+                    ticks: {
+                        beginAtZero: true,
+                        max: 10, // Max score of 10 (normalized)
+                        stepSize: 1
+                    }
+                }
+            }
+        });
     };
 
     // Function to populate the profile page with student data
@@ -174,7 +214,6 @@
                 document.getElementById('email').textContent = studentData.email;
                 document.getElementById('faculty').textContent = studentData.faculty;
                 document.getElementById('institution').textContent = studentData.institution;
-
             } else {
                 console.log('No student data found.');
             }
