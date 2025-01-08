@@ -1,24 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trigger Lambda</title>
+    <title>Trigger FastAPI</title>
 </head>
 <body>
-    <input type="text" id="searchTerm" placeholder="Enter search term" />
-    <button id="trigger">Search</button>
-    <script>
-        document.getElementById('trigger').addEventListener('click', async () => {
-            const searchTerm = document.getElementById('searchTerm').value;
+    <h1>Course Search</h1>
+    <label for="source">Select Source:</label>
+    <select id="source">
+        <option value="mdec">MDEC</option>
+        <option value="coursera">Coursera</option>
+    </select>
+    <br/>
+    <div id="searchField" style="display: none;">
+        <input type="text" id="searchTerm" placeholder="Enter search term (Coursera only)" />
+        <br/>
+    </div>
+    <button id="trigger">Fetch Data</button>
+    
+    <div id="result"></div>
 
-            const apiUrl = 'https://qj7qk0r2qa.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
+    <script>
+        const sourceSelect = document.getElementById('source');
+        const searchField = document.getElementById('searchField');
+        
+        sourceSelect.addEventListener('change', () => {
+            if (sourceSelect.value === 'coursera') {
+                searchField.style.display = 'block';
+            } else {
+                searchField.style.display = 'none';
+            }
+        });
+
+        document.getElementById('trigger').addEventListener('click', async () => {
+            const source = sourceSelect.value;
+            const searchTerm = document.getElementById('searchTerm').value;
+            
+            let apiUrl = 'http://limfamily.synology.me:1234/';
+            if (source === 'mdec') {
+                apiUrl += 'mdec';
+            } else if (source === 'coursera') {
+                apiUrl += `coursera?search=${encodeURIComponent(searchTerm)}`;
+            }
 
             try {
                 const response = await fetch(apiUrl, {
-                    method: 'POST',
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ search_term: searchTerm }),
                 });
 
                 if (!response.ok) {
@@ -26,9 +55,10 @@
                 }
 
                 const data = await response.json();
-                console.log('Response:', data);
+                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
             } catch (error) {
                 console.error('Error:', error);
+                document.getElementById('result').innerText = 'Failed to fetch data.';
             }
         });
     </script>
