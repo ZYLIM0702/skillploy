@@ -1,77 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trending Courses/Topics</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      align-items: top;
+      min-height: 100vh;
     }
+
     .container {
-      max-width: 800px;
-      margin: 0 auto;
+      max-width: 900px;
+      width: 90%;
+      background-color: white;
+      padding: 40px;
+      margin: 40px auto;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
+
+    h1 {
+      text-align: center;
+      color: #0073e6;
+      margin-bottom: 40px;
+    }
+
     .topic {
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #e3f2fd;
+      transition: transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 20px;
     }
+
+    .topic:hover {
+      transform: translateY(-5px);
+      background-color: #bbdefb;
+    }
+
+    .topic img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
     h2 {
-      font-size: 20px;
+      font-size: 22px;
       margin-bottom: 10px;
+      color: #333;
     }
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #555;
+    }
+
     a {
-      color: #007BFF;
+      color: #0073e6;
       text-decoration: none;
+      font-weight: 600;
     }
+
     a:hover {
       text-decoration: underline;
     }
+
     hr {
       border: 0;
       height: 1px;
       background: #ddd;
-      margin: 20px 0;
+      margin: 30px 0;
     }
   </style>
+      <script>
+        // Function to load header and footer
+        function loadHeaderFooter() {
+            // Load the header
+            fetch('../header.html')
+                .then(response => response.text())
+                .then(data => document.getElementById('header').innerHTML = data);
+
+            // Load the footer
+            fetch('../footer.html')
+                .then(response => response.text())
+                .then(data => document.getElementById('footer').innerHTML = data);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+    </script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+
 </head>
+
 <body>
+
+  <div id="header" style="padding-bottom: 0px; background-color: #2124B1;"></div>
+
+
   <div class="container">
+
     <h1>Trending Courses and Topics</h1>
 
-    <div class="topic">
-      <h2>1. Artificial Intelligence and Machine Learning</h2>
-      <p>Explore the fundamentals of AI and machine learning, including neural networks, natural language processing, and more.</p>
-      <a href="#" target="_blank">Learn more on Coursera</a>
-    </div>
-    <hr>
+    <label for="source">Select Source:</label>
+    <select id="source">
+      <option value="mdec" selected>MDEC</option>
+      <option value="coursera">Coursera</option>
+    </select>
 
-    <div class="topic">
-      <h2>2. Web Development with Modern Frameworks</h2>
-      <p>Discover the latest trends in web development, such as React, Angular, and Next.js.</p>
-      <a href="#" target="_blank">Learn more on Coursera</a>
+    <div id="searchField" style="display: none; margin-top: 20px;">
+      <input type="text" id="searchTerm" placeholder="Enter search term (Coursera only)" />
     </div>
-    <hr>
 
-    <div class="topic">
-      <h2>3. Cybersecurity Essentials</h2>
-      <p>Understand the basics of cybersecurity, including network security, ethical hacking, and incident response.</p>
-      <a href="#" target="_blank">Learn more on Coursera</a>
-    </div>
-    <hr>
-
-    <div class="topic">
-      <h2>4. Data Science and Analytics</h2>
-      <p>Learn how to analyze and interpret data using Python, R, and other modern tools.</p>
-      <a href="#" target="_blank">Learn more on Coursera</a>
-    </div>
-    <hr>
-
-    <div class="topic">
-      <h2>5. Cloud Computing and DevOps</h2>
-      <p>Master the essentials of cloud platforms like AWS, Azure, and DevOps practices for efficient workflows.</p>
-      <a href="#" target="_blank">Learn more on Coursera</a>
-    </div>
+    <button id="fetchData" style="margin-top: 20px;">Fetch Data</button>
+    
+    <div id="result" style="margin-top: 40px;"></div>
   </div>
+
+  <script>
+    const sourceSelect = document.getElementById('source');
+    const searchField = document.getElementById('searchField');
+    const resultContainer = document.getElementById('result');
+
+    sourceSelect.addEventListener('change', () => {
+      searchField.style.display = sourceSelect.value === 'coursera' ? 'block' : 'none';
+    });
+
+    document.getElementById('fetchData').addEventListener('click', async () => {
+      const source = sourceSelect.value;
+      const searchTerm = document.getElementById('searchTerm').value;
+
+      let apiUrl = 'https://qj7qk0r2qa.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
+      let requestOptions = {
+        method: 'OPTIONS',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          search_term: searchTerm, 
+          search_source: source 
+        }),
+        mode: 'cors',
+      };
+
+      try {
+        const response = await fetch(apiUrl, requestOptions);
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+        const data = await response.json();
+        const parsedData = JSON.parse(data.body);
+        resultContainer.innerHTML = '';
+
+        parsedData.forEach(course => {
+          const courseElement = document.createElement('div');
+          courseElement.className = 'topic';
+          courseElement.innerHTML = `
+            <img src="${course.image_src || 'https://via.placeholder.com/100'}" alt="${course.title || 'No Title'}">
+            <div>
+              <h2>${course.title || ''}</h2>
+              <p>${course.description || ''}</p>
+              <a href="${course.link || '#'}" target="_blank">Learn more</a>
+            </div>
+          `;
+          resultContainer.appendChild(courseElement);
+        });
+
+      } catch (error) {
+        console.error('Error:', error);
+        resultContainer.innerText = 'Failed to fetch data. Please try again.';
+      }
+    });
+  </script>
 </body>
+
 </html>

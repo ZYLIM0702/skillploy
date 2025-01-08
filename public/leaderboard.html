@@ -1,85 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leaderboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      align-items: center;
+      width: 100%;
     }
+
+    .container {
+      max-width: 1000px;
+      width: 90%;
+      background-color: white;
+      padding: 40px;
+      margin: 40px auto;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      color: #0073e6;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-size: 18px;
+      margin-right: 10px;
+    }
+
+    select, button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 10px 0 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    button {
+      background-color: #0073e6;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #005bb5;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 30px;
     }
+
     th, td {
       border: 1px solid #ddd;
-      padding: 10px;
+      padding: 15px;
       text-align: left;
     }
+
     th {
-      background-color: #f4f4f4;
+      background-color: #e3f2fd;
+      color: #333;
     }
-    select, button {
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 16px;
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
-  </style>
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+</style>
+
 </head>
+
 <body>
-  <h1>Leaderboard</h1>
 
-  <!-- Dropdown for Faculty -->
-  <label for="facultyDropdown">Select Faculty:</label>
-  <select id="facultyDropdown">
-    <option value="">-- Select a Faculty --</option>
-    <option value="Faculty of Computer Science">Faculty of Computer Science</option>
-    <option value="Faculty of Medicine">Faculty of Medicine</option>
-    <option value="Faculty of Finance">Faculty of Finance</option>
-  </select>
+  <div class="container">
+    <h1>Leaderboard</h1>
 
-  <!-- Dropdown for Courses -->
-  <label for="courseDropdown">Select Course:</label>
-  <select id="courseDropdown">
-    <option value="">-- Select a Course --</option>
-  </select>
+    <label for="facultyDropdown">Select Faculty:</label>
+    <select id="facultyDropdown">
+      <option value="">-- Select a Faculty --</option>
+      <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+      <option value="Faculty of Medicine">Faculty of Medicine</option>
+      <option value="Faculty of Finance">Faculty of Finance</option>
+    </select>
 
-  <button id="loadleaderboard">Show Leaderboard</button>
+    <label for="courseDropdown">Select Course:</label>
+    <select id="courseDropdown">
+      <option value="">-- Select a Course --</option>
+    </select>
 
-  <!-- Leaderboard Table -->
-  <table>
-    <thead>
-      <tr>
-        <th>University</th> 
-        <th>Score</th>
-      </tr>
-    </thead>
-    <tbody id="leaderboardTable"></tbody>
-  </table>
+    <button id="loadleaderboard">Show Leaderboard</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>University</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardTable"></tbody>
+    </table>
+  </div>
+
   <script type="module">
     import { db } from "../firebase-config.js";
     import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-  
+
     const facultyDropdown = document.getElementById("facultyDropdown");
     const courseDropdown = document.getElementById("courseDropdown");
     const leaderboardTable = document.getElementById("leaderboardTable");
     const leaderboardButton = document.getElementById("loadleaderboard");
-  
-    // Populate Courses Dropdown Based on Selected Faculty
+
     facultyDropdown.addEventListener("change", async () => {
       const selectedFaculty = facultyDropdown.value;
-      courseDropdown.innerHTML = '<option value="">-- Select a Course --</option>'; // Clear previous options
-  
+      courseDropdown.innerHTML = '<option value="">-- Select a Course --</option>';
+
       try {
         const coursesRef = collection(db, "Courses");
         const q = query(coursesRef, where("faculty", "==", selectedFaculty));
         const snapshot = await getDocs(q);
-  
+
         const uniqueCourses = new Set();
-  
+
         snapshot.forEach((doc) => {
           const course = doc.data();
           if (!uniqueCourses.has(course.title)) {
@@ -91,30 +147,27 @@
         console.error("Error fetching courses:", error);
       }
     });
-  
-    // Load Leaderboard
+
     leaderboardButton.addEventListener("click", async () => {
       const selectedCourse = courseDropdown.value;
       if (!selectedCourse) {
         alert("Please select a course!");
         return;
       }
-  
-      leaderboardTable.innerHTML = ""; // Clear previous leaderboard
-  
+
+      leaderboardTable.innerHTML = "";
+
       try {
-        // Query Institutions that include the selected course
         const institutionsRef = collection(db, "Institutions");
         const q = query(institutionsRef, where("courses", "array-contains", selectedCourse));
         const institutionSnapshot = await getDocs(q);
-  
+
         const institutionRatings = [];
-  
+
         for (const institutionDoc of institutionSnapshot.docs) {
           const institution = institutionDoc.data();
           const institutionName = institution.name;
-  
-          // Fetch the course data to get the overallRating
+
           const courseDocRef = doc(db, "Courses", selectedCourse);
           const courseDoc = await getDoc(courseDocRef);
           if (courseDoc.exists()) {
@@ -125,8 +178,7 @@
             });
           }
         }
-  
-        // Populate Leaderboard Table
+
         institutionRatings.forEach(({ university, score }) => {
           leaderboardTable.innerHTML += `
             <tr>
@@ -140,6 +192,23 @@
       }
     });
   </script>
-    
+  <script>
+    // Function to load header and footer
+    function loadHeaderFooter() {
+        // Load the header
+        fetch('../header.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('header').innerHTML = data);
+  
+        // Load the footer
+        fetch('../footer.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('footer').innerHTML = data);
+    }
+  
+    document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+  </script>
+  
 </body>
+
 </html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Module Suggestion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .module-list {
+            min-height: 300px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: white;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .module-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .suggested-courses {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+
+        .suggested-card {
+            min-width: 250px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatbot {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 300px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Course Module Suggestion</h1>
+        <div class="row">
+            <div class="col-md-5">
+                <h3>Current Modules</h3>
+                <div id="currentModules" class="module-list"></div>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                <button id="generateModules" class="btn btn-primary">Generate >></button>
+            </div>
+
+            <div class="col-md-5">
+                <h3>AI Suggested Modules</h3>
+                <div id="suggestedModules" class="module-list"></div>
+            </div>
+        </div>
+
+        <h2 class="mt-5">Suggested Courses</h2>
+        <div id="suggestedCourses" class="suggested-courses"></div>
+
+        <div class="chatbot">
+            <h4>Chatbot</h4>
+            <input type="text" class="form-control mb-2" placeholder="Ask me anything...">
+            <button class="btn btn-primary w-100">Send</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from '../firebase-config.js';
+        import {
+            collection,
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+        const currentModulesDiv = document.getElementById('currentModules');
+        const suggestedModulesDiv = document.getElementById('suggestedModules');
+        const suggestedCoursesDiv = document.getElementById('suggestedCourses');
+        const generateButton = document.getElementById('generateModules');
+
+        const courseId = "course1";  // Replace with the actual course ID or dynamically fetch
+
+        // Fetch current modules from Firestore
+        const fetchCourseModules = async () => {
+            const courseRef = doc(db, 'Courses', courseId);
+            const courseDoc = await getDoc(courseRef);
+
+            if (courseDoc.exists()) {
+                const courseData = courseDoc.data();
+                currentModulesDiv.innerHTML = '';
+
+                courseData.modules.forEach(module => {
+                    const moduleDiv = document.createElement('div');
+                    moduleDiv.className = 'module-item';
+                    moduleDiv.textContent = module;
+                    currentModulesDiv.appendChild(moduleDiv);
+                });
+            }
+        };
+
+        // Generate suggested modules (mock API call)
+        generateButton.addEventListener('click', async () => {
+            suggestedModulesDiv.innerHTML = '<p>Generating...</p>';
+
+            // Mock API URL
+            const apiUrl = 'https://api.example.com/generateModules';
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: JSON.stringify({ courseId: courseId }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                suggestedModulesDiv.innerHTML = '';
+
+                data.modules.forEach(module => {
+                    const moduleDiv = document.createElement('div');
+                    moduleDiv.className = 'module-item';
+                    moduleDiv.textContent = module;
+                    suggestedModulesDiv.appendChild(moduleDiv);
+                });
+            } else {
+                suggestedModulesDiv.innerHTML = '<p>Error generating modules.</p>';
+            }
+        });
+
+        // Fetch suggested courses from API
+        const fetchSuggestedCourses = async () => {
+            const apiUrl = 'https://qj7qk0r2qa.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            const parsedData = JSON.parse(data.body);
+            parsedData.forEach(course => {
+                const courseCard = document.createElement('div');
+                courseCard.className = 'suggested-card';
+                courseCard.innerHTML = `
+                    <h5>${course.title}</h5>
+                    <p>${course.description}</p>
+                    <a href="${course.link}" target="_blank" class="btn btn-primary">View Course</a>
+                `;
+                suggestedCoursesDiv.appendChild(courseCard);
+            });
+        };
+
+        fetchCourseModules();
+        fetchSuggestedCourses();
+    </script>
+</body>
+
+</html>

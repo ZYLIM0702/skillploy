@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,31 +9,80 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7fa;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #0073e6;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
         #module-list {
             min-height: 150px;
             border: 2px dashed #ddd;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             background-color: #f9f9f9;
         }
 
         .module-item {
-            padding: 10px;
+            padding: 12px;
             background-color: #007bff;
-            color: #fff;
-            margin: 5px 0;
-            border-radius: 3px;
+            color: white;
+            margin: 8px 0;
+            border-radius: 8px;
             cursor: grab;
+            text-align: center;
+            transition: transform 0.2s;
         }
 
         .module-item:active {
-            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        button {
+            transition: background-color 0.3s ease;
         }
     </style>
+        <script>
+            // Function to load header and footer
+            function loadHeaderFooter() {
+                // Load the header
+                fetch('../header.html')
+                    .then(response => response.text())
+                    .then(data => document.getElementById('header').innerHTML = data);
+    
+                // Load the footer
+                fetch('../footer.html')
+                    .then(response => response.text())
+                    .then(data => document.getElementById('footer').innerHTML = data);
+            }
+    
+            document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+        </script>
 </head>
+
 <body>
+    <div id="header" style="padding-bottom: 0; background-color: #2124B1;"></div>
+
     <div class="container mt-4">
-        <h1 class="text-center">Create a New Course</h1>
+        <h1>Create a New Course</h1>
         <div class="card mt-4">
             <div class="card-body">
                 <form id="course-form">
@@ -69,7 +119,7 @@
                     </div>
 
                     <div id="module-list" class="mb-3"></div>
-                    <button type="submit" class="btn btn-success">Create Course</button>
+                    <button type="submit" class="btn btn-success w-100">Create Course</button>
                 </form>
             </div>
         </div>
@@ -88,7 +138,6 @@
         const moduleInput = document.getElementById('module-input');
     
         let modules = [];
-
         let dragSrcEl = null;
     
         addModuleBtn.addEventListener('click', () => {
@@ -101,20 +150,6 @@
 
                 moduleItem.addEventListener('dragstart', (e) => {
                     dragSrcEl = moduleItem;
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('text/plain', '');
-                });
-
-                moduleItem.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                });
-
-                moduleItem.addEventListener('drop', (e) => {
-                    e.stopPropagation();
-                    if (dragSrcEl !== moduleItem) {
-                        moduleList.insertBefore(dragSrcEl, moduleItem);
-                        modules = Array.from(moduleList.children).map(item => item.textContent);
-                    }
                 });
 
                 moduleList.appendChild(moduleItem);
@@ -122,37 +157,7 @@
                 moduleInput.value = '';
             }
         });
-    
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const courseTitle = document.getElementById('course-title').value.trim();
-            const faculty = document.getElementById('faculty').value;
-            const description = document.getElementById('description').value.trim();
-            const lecturerId = document.getElementById('lecturer-id').value.trim();
-    
-            if (!courseTitle || !description) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-    
-            try {
-                await addDoc(collection(db, 'Courses'), {
-                    title: courseTitle,
-                    description,
-                    faculty,
-                    lecturerId: lecturerId || null,
-                    modules,
-                    feedbacks: [],
-                    overallRating: 0
-                });
-                alert('Course created successfully!');
-                form.reset();
-                moduleList.innerHTML = '';
-                modules = [];
-            } catch (error) {
-                console.error('Error adding document: ', error);
-            }
-        });
     </script>
 </body>
+
 </html>

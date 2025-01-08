@@ -16,13 +16,12 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
 
         <div class="container-xxl position-relative p-0">
             <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
-                <a href="/"><img src="SkillPloy_1.png" width=100 height=100 alt="Logo"></a>
+                <a href="/"><img src="../SkillPloy_1.png" width=100 height=100 alt="Logo"></a>
         
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                     <span class="fa fa-bars"></span> 
@@ -31,8 +30,8 @@
                     <div class="navbar-nav ms-auto py-0">
                         <a href="index.html" class="nav-item nav-link active">Home</a>
                         <a href="jobs.html" class="nav-item nav-link">Find Job</a>
-                        <a href="trendingSkills.html" class="nav-item nav-link">Trending Skills</a>
-                        <a href="public/leaderboard.html" class="nav-item nav-link">Leaderboard</a>
+                        <a href="trending_course.html" class="nav-item nav-link">Trending Courses</a>
+                        <a href="leaderboard.html" class="nav-item nav-link">Leaderboard</a>
                         <div class="nav-item dropdown">
                             <a href="about.html" class="nav-link" >About Us</a>
                         </div>
@@ -43,3 +42,49 @@
 
             
         </div>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+            import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+            import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+            import { db, auth } from '../firebase-config.js';
+        
+            document.addEventListener('DOMContentLoaded', () => {
+                const dashboardLink = document.getElementById('dashboard-link');
+        
+                const getUserData = async (uid) => {
+                    const collections = ['Students', 'Employers', 'Lecturers'];
+                    
+                    for (const collectionName of collections) {
+                        const userDocRef = doc(db, collectionName, uid);
+                        const userDoc = await getDoc(userDocRef);
+                        
+                        if (userDoc.exists()) {
+                            return { data: userDoc.data(), collection: collectionName };
+                        }
+                    }
+                    return null;
+                };
+        
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        const uid = user.uid;
+                        const userResult = await getUserData(uid);
+                        
+                        if (userResult) {
+                            const { collection } = userResult;
+                            let dashboardPage = 'signin.html';
+                            if (collection === 'Students') {
+                                dashboardPage = 'student_dashboard.html';
+                            } else if (collection === 'Employers') {
+                                dashboardPage = 'employer_dashboard.html';
+                            } else if (collection === 'Lecturers') {
+                                dashboardPage = 'lecturer_dashboard.html';
+                            }
+                            dashboardLink.href = dashboardPage;
+                            dashboardLink.textContent = 'Dashboard';
+                        }
+                    }
+                });
+            });
+        </script>
