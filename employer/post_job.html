@@ -105,11 +105,14 @@
           <option value="Faculty of Medicine">Faculty of Medicine</option>
           <option value="Faculty of Finance">Faculty of Finance</option>
         </select>
-
         <div id="skillsSection" class="skills-container"></div>
 
         <label for="salaryRange">Salary Range:</label>
         <input type="text" id="salaryRange" name="salaryRange" placeholder="e.g., RM4000 - RM6000">
+
+        <!-- File Input for Image Upload -->
+        <label for="jobImage">Job Image:</label>
+        <input type="file" id="jobImage" name="jobImage" accept="image/*">
 
         <button type="submit">Post Job</button>
       </form>
@@ -146,7 +149,7 @@
         if (!querySnapshot.empty) {
           querySnapshot.forEach(doc => {
             const skillName = doc.data().name; // Skill name
-            const skillDocRef = doc.ref.path.replace(/^Skills\//, '');
+const skillDocRef = doc.ref.path.replace(/^Skills\//, '');
 
 
             const skillOption = document.createElement("label");
