@@ -39,6 +39,10 @@
                 // Make the API call
                 const response = await fetch(`${apiUrl}?search_term=${encodeURIComponent(searchTerm)}`, {
                     method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
                 });
 
                 // Parse the JSON response
