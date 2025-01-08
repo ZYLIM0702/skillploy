@@ -126,14 +126,14 @@
       getDocs,
       doc,
       setDoc
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-  
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
     // Populate skills based on selected sector
     document.getElementById("sector").addEventListener("change", async function () {
       const selectedSector = this.value;
       const skillsContainer = document.getElementById("skillsSection");
       skillsContainer.innerHTML = ""; // Clear previous skills
-  
+
       try {
         // Query Firestore to fetch skills for the selected sector
         const skillsQuery = query(
@@ -141,16 +141,19 @@
           where("sector", "==", selectedSector)
         );
         const querySnapshot = await getDocs(skillsQuery);
-  
+
         // Check if any skills are available for the selected sector
         if (!querySnapshot.empty) {
           querySnapshot.forEach(doc => {
-            const skill = doc.data().name; // Assuming the skill name is stored in the 'name' field
+            const skillName = doc.data().name; // Skill name
+            const skillDocRef = doc.ref.path.replace(/^Skills\//, '');
+
+
             const skillOption = document.createElement("label");
             skillOption.innerHTML = `
-              <input type="checkbox" value="${skill}" name="skills">
-              ${skill}
-            `;
+          <input type="checkbox" value="${skillDocRef}" name="skills">
+          ${skillName}
+        `;
             skillsContainer.appendChild(skillOption);
           });
         } else {
@@ -161,37 +164,37 @@
         skillsContainer.innerHTML = "<p>Error fetching skills. Please try again later.</p>";
       }
     });
-  
+
     // Handle form submission and add job posting
     document.getElementById("postJobForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-  
+
       // Get form data
       const jobTitle = document.getElementById("jobTitle").value;
       const jobDescription = document.getElementById("jobDescription").value;
       const sector = document.getElementById("sector").value;
       const selectedSkills = Array.from(document.querySelectorAll("input[name='skills']:checked")).map(skill => skill.value);
       const salaryRange = document.getElementById("salaryRange").value;
-  
+
       // Create job object
       const job = {
         title: jobTitle,
         description: jobDescription,
         employerId: "E12345", // Hardcoded employer ID for now
-        requirements: selectedSkills,
+        requirements: selectedSkills, // Use document references instead of skill names
         applicants: [], // Empty array initially
         salary: salaryRange
       };
-  
+
       try {
         // Fetch all existing jobs to determine the next document ID
         const jobsQuery = query(collection(db, "Jobs"));
         const querySnapshot = await getDocs(jobsQuery);
-  
+
         // Determine the next sequential ID (e.g., job1, job2, ...)
         const jobIds = querySnapshot.docs.map(doc => doc.id);
         let nextJobId = "job1"; // Default ID if no jobs exist
-  
+
         if (jobIds.length > 0) {
           const jobNumbers = jobIds
             .map(id => parseInt(id.replace("job", ""), 10)) // Extract numerical parts of job IDs
@@ -199,12 +202,12 @@
           const maxJobNumber = Math.max(...jobNumbers); // Find the highest number
           nextJobId = `job${maxJobNumber + 1}`; // Increment for the next ID
         }
-  
+
         // Insert job into Firestore with the determined document ID
         await setDoc(doc(db, "Jobs", nextJobId), job);
-  
+
         alert(`Job successfully posted with ID: ${nextJobId}`);
-  
+
         // Clear form
         document.getElementById("postJobForm").reset();
         document.getElementById("skillsSection").innerHTML = ""; // Clear skills section
@@ -213,9 +216,10 @@
         alert("Error posting job. Please try again.");
       }
     });
+
   </script>
-  
-  
+
+
 </body>
 
 </html>
