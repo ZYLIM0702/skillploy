@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employer Job Posting Module</title>
+  <style>
+    /* CSS Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    header {
+      background-color: #0073e6;
+      color: white;
+      text-align: center;
+      padding: 1em 0;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    form label {
+      margin-top: 10px;
+    }
+
+    form input, form textarea, form button {
+      margin-top: 5px;
+      padding: 8px;
+      font-size: 1rem;
+    }
+
+    form button {
+      margin-top: 15px;
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #005bb5;
+    }
+
+    #jobCards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .job-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 5px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Employer Job Posting Module</h1>
+  </header>
+
+  <main>
+    <!-- Job Posting Form -->
+    <section id="job-form">
+      <h2>Create Job Posting</h2>
+      <form id="postJobForm">
+        <label for="jobTitle">Job Title:</label>
+        <input type="text" id="jobTitle" name="jobTitle" required>
+        
+        <label for="jobDescription">Job Description:</label>
+        <textarea id="jobDescription" name="jobDescription" required></textarea>
+
+        <label for="requiredSkills">Required Skills (comma-separated):</label>
+        <input type="text" id="requiredSkills" name="requiredSkills" required>
+
+        <label for="salaryRange">Salary Range:</label>
+        <input type="text" id="salaryRange" name="salaryRange" placeholder="e.g., RM4000 - RM6000">
+
+        <button type="submit">Post Job</button>
+      </form>
+    </section>
+
+    <!-- Display Job Postings -->
+    <section id="job-listings">
+      <h2>Job Postings</h2>
+      <div id="jobCards"></div>
+    </section>
+  </main>
+
+  <script>
+    // JavaScript Logic
+
+    // Dummy storage for job postings
+    const jobPostings = [];
+
+    // Form Submission Logic
+    document.getElementById("postJobForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Get form data
+      const jobTitle = document.getElementById("jobTitle").value;
+      const jobDescription = document.getElementById("jobDescription").value;
+      const requiredSkills = document.getElementById("requiredSkills").value.split(",").map(skill => skill.trim());
+      const salaryRange = document.getElementById("salaryRange").value;
+
+      // Create job object
+      const job = {
+        title: jobTitle,
+        description: jobDescription,
+        skills: requiredSkills,
+        salary: salaryRange,
+      };
+
+      // Add to job postings and render
+      jobPostings.push(job);
+      renderJobPostings();
+
+      // Clear form
+      document.getElementById("postJobForm").reset();
+    });
+
+    // Render Job Postings
+    function renderJobPostings() {
+      const jobCardsContainer = document.getElementById("jobCards");
+      jobCardsContainer.innerHTML = ""; // Clear existing cards
+
+      jobPostings.forEach(job => {
+        const card = document.createElement("div");
+        card.className = "job-card";
+        card.innerHTML = `
+          <h3>${job.title}</h3>
+          <p>${job.description}</p>
+          <p><strong>Skills:</strong> ${job.skills.join(", ")}</p>
+          <p><strong>Salary:</strong> ${job.salary}</p>
+        `;
+        jobCardsContainer.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
