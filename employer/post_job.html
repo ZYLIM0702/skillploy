@@ -122,11 +122,47 @@
     import {
       collection,
       query,
+      where,
       getDocs,
       doc,
       setDoc
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
   
+    // Populate skills based on selected sector
+    document.getElementById("sector").addEventListener("change", async function () {
+      const selectedSector = this.value;
+      const skillsContainer = document.getElementById("skillsSection");
+      skillsContainer.innerHTML = ""; // Clear previous skills
+  
+      try {
+        // Query Firestore to fetch skills for the selected sector
+        const skillsQuery = query(
+          collection(db, "Skills"),
+          where("sector", "==", selectedSector)
+        );
+        const querySnapshot = await getDocs(skillsQuery);
+  
+        // Check if any skills are available for the selected sector
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach(doc => {
+            const skill = doc.data().name; // Assuming the skill name is stored in the 'name' field
+            const skillOption = document.createElement("label");
+            skillOption.innerHTML = `
+              <input type="checkbox" value="${skill}" name="skills">
+              ${skill}
+            `;
+            skillsContainer.appendChild(skillOption);
+          });
+        } else {
+          skillsContainer.innerHTML = "<p>No skills found for the selected sector.</p>";
+        }
+      } catch (error) {
+        console.error("Error fetching skills: ", error);
+        skillsContainer.innerHTML = "<p>Error fetching skills. Please try again later.</p>";
+      }
+    });
+  
+    // Handle form submission and add job posting
     document.getElementById("postJobForm").addEventListener("submit", async function (e) {
       e.preventDefault();
   
@@ -178,6 +214,7 @@
       }
     });
   </script>
+  
   
 </body>
 
