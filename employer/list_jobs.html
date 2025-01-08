@@ -194,13 +194,14 @@
                                 if (studentDoc.exists()) {
                                     const student = studentDoc.data();
                                     const listItem = document.createElement('li');
-                                    listItem.textContent = student.name;
+                                    listItem.innerHTML = `<a href="candidate_profile.html?studentId=${studentDoc.id}" style="text-decoration: none; color: inherit;">${student.name}</a>`;
                                     applicantList.appendChild(listItem);
                                 } else {
                                     console.error(`Student document not found: ${applicantId}`);
                                 }
                             }
                         }
+
 
                     } else {
                         applicantList.innerHTML = '<li>No applicants for this job.</li>';
