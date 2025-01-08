@@ -46,7 +46,7 @@
       courseDropdown.innerHTML = '<option value="">-- Select a Course --</option>'; // Clear previous options
 
       try {
-        const coursesRef = collection(db, "Courses");
+        const coursesRef = db.collection("Courses");
         const q = query(coursesRef, where("faculty", "==", selectedFaculty));
         const snapshot = await getDocs(q);
 
