@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navigate Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Example Navigation</h1>
+  <p>Click a button to navigate:</p>
+
+  <!-- Buttons to navigate -->
+  <button onclick="navigateTo('leaderboard.html')">Go to Leaderboard</button>
+  <button onclick="navigateTo('comparison.html')">Go to Comparison</button>
+  <button onclick="navigateTo('trendingcourse.html')">Go to Trending Courses</button>
+
+  <script>
+    // Function to navigate to the specified page
+    function navigateTo(page) {
+      // Change the current location to the specified page
+      window.location.href = page;
+    }
+  </script>
+</body>
+</html>
