@@ -157,7 +157,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
-        const OPENAI_API_KEY = "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"; // Replace with your actual API key
+        const OPENAI_API = "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"; // Replace with your actual API key
 
         let questions = [];
         let currentQuestionIndex = 0;
@@ -197,7 +197,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                        "Authorization": `Bearer ${OPENAI_API}`,
                     },
                     body: JSON.stringify({
                         model: "gpt-4",
