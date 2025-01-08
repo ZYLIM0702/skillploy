@@ -40,12 +40,15 @@
                 const response = await fetch(`${apiUrl}?search_term=${encodeURIComponent(searchTerm)}`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors'
                 });
 
                 // Parse the JSON response
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
 
                 // Display the response
