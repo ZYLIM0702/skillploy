@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,29 +13,37 @@
       padding: 0;
       box-sizing: border-box;
     }
+
     header {
       background-color: #0073e6;
       color: white;
       text-align: center;
       padding: 1em 0;
     }
+
     main {
       padding: 20px;
     }
+
     form {
       display: flex;
       flex-direction: column;
       max-width: 400px;
       margin: 0 auto;
     }
+
     form label {
       margin-top: 10px;
     }
-    form textarea, form select, form button {
+
+    form textarea,
+    form select,
+    form button {
       margin-top: 5px;
       padding: 8px;
       font-size: 1rem;
     }
+
     form button {
       margin-top: 15px;
       background-color: #0073e6;
@@ -42,12 +51,15 @@
       border: none;
       cursor: pointer;
     }
+
     form button:hover {
       background-color: #005bb5;
     }
+
     #employeeList {
       margin-top: 20px;
     }
+
     .employee-item {
       border: 1px solid #ccc;
       padding: 15px;
@@ -57,9 +69,11 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .employee-item .info {
       flex-grow: 1;
     }
+
     .employee-item button {
       background-color: #0073e6;
       color: white;
@@ -68,9 +82,11 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
     .employee-item button:hover {
       background-color: #005bb5;
     }
+
     #reviewModal {
       display: none;
       position: fixed;
@@ -84,6 +100,7 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       z-index: 1000;
     }
+
     #modalOverlay {
       display: none;
       position: fixed;
@@ -96,6 +113,7 @@
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Employer Feedback Feature</h1>
@@ -121,13 +139,16 @@
       <h2>Write a Review</h2>
       <form id="reviewForm">
         <textarea id="reviewText" placeholder="Write your review here..." rows="5" required></textarea>
+        <label for="ratingValue">Rating (1-5):</label>
+        <input id="ratingValue" type="number" min="1" max="5" required />
         <button type="submit">Submit Review</button>
       </form>
     </div>
+
   </main>
   <script type="module">
     import { db } from '../firebase-config.js';
-    import {collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { collection, query, where, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     const sectorDropdown = document.getElementById("sector");
     const employeeList = document.getElementById("employeeList");
@@ -135,6 +156,7 @@
     const modalOverlay = document.getElementById("modalOverlay");
     const reviewForm = document.getElementById("reviewForm");
     const reviewText = document.getElementById("reviewText");
+    const ratingValue = document.getElementById("ratingValue");
     let currentEmployee = null;
 
     sectorDropdown.addEventListener("change", async function () {
@@ -162,12 +184,12 @@
             const employeeItem = document.createElement("div");
             employeeItem.className = "employee-item";
             employeeItem.innerHTML = `
-              <div class="info">
-                <strong>${student.name}</strong><br>
-                Course: ${courseName}
-              </div>
-              <button data-id="${studentDoc.id}" data-name="${student.name}">Review</button>
-            `;
+          <div class="info">
+            <strong>${student.name}</strong><br>
+            Course: ${courseName}
+          </div>
+          <button data-id="${studentDoc.id}" data-name="${student.name}" data-course="${student.courseId}">Review</button>
+        `;
             employeeList.appendChild(employeeItem);
           }
 
@@ -176,6 +198,7 @@
               currentEmployee = {
                 id: this.getAttribute("data-id"),
                 name: this.getAttribute("data-name"),
+                courseId: this.getAttribute("data-course"),
               };
               openReviewModal();
             });
@@ -189,6 +212,7 @@
 
     function openReviewModal() {
       reviewText.value = "";
+      ratingValue.value = "";
       reviewModal.style.display = "block";
       modalOverlay.style.display = "block";
     }
@@ -198,16 +222,38 @@
       modalOverlay.style.display = "none";
     }
 
-    reviewForm.addEventListener("submit", function (e) {
+    reviewForm.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const reviewContent = reviewText.value;
-      console.log(`Review for ${currentEmployee.name}: ${reviewContent}`);
-      alert(`Review submitted for ${currentEmployee.name}!`);
-      closeReviewModal();
+      const rating = parseInt(ratingValue.value);
+
+      if (!rating || rating < 1 || rating > 5) {
+        alert("Please enter a valid rating between 1 and 5.");
+        return;
+      }
+
+      try {
+        const courseDocRef = doc(db, "Courses", currentEmployee.courseId);
+        await updateDoc(courseDocRef, {
+          feedbacks: arrayUnion({
+            comment: reviewContent,
+            rating: rating,
+            submittedById: "E12345", // Fixed value
+            submittedByType: "employer", // Fixed value
+          }),
+        });
+
+        alert(`Review submitted for ${currentEmployee.name}!`);
+        closeReviewModal();
+      } catch (error) {
+        console.error("Error submitting review: ", error);
+        alert("Failed to submit review. Please try again.");
+      }
     });
 
     modalOverlay.addEventListener("click", closeReviewModal);
   </script>
 </body>
+
 </html>
