@@ -31,7 +31,7 @@
             }
         });
 
-        document.getElementById('trigger').addEventListener('click', async () => {
+        document.getElementById('trigger').addEventListener('click', () => {
             const source = sourceSelect.value;
             const searchTerm = document.getElementById('searchTerm').value;
             
@@ -42,29 +42,25 @@
                 apiUrl += `coursera?search=${encodeURIComponent(searchTerm)}`;
             }
 
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status}`);
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', apiUrl, true);
+            xhr.setRequestHeader('Accept', 'application/json');
+            
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        document.getElementById('result').innerText = JSON.stringify(JSON.parse(xhr.responseText), null, 2);
+                    } else {
+                        document.getElementById('result').innerText = 'Failed to fetch data. Please check the server connection or SSL configuration.';
+                    }
                 }
-
-                const data = await response.json();
-                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('result').innerText = 'Failed to fetch data. Please check the server connection or SSL configuration.';
-            }
+            };
+            
+            xhr.onerror = function () {
+                document.getElementById('result').innerText = 'Request failed. Check network or server status.';
+            };
+            
+            xhr.send();
         });
     </script>
 </body>
