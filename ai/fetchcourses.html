@@ -35,7 +35,7 @@
             const source = sourceSelect.value;
             const searchTerm = document.getElementById('searchTerm').value;
             
-            let apiUrl = 'http://limfamily.synology.me:1234/';
+            let apiUrl = 'http://limfamily.synology.me:1234/'; // Enforce HTTP only
             if (source === 'mdec') {
                 apiUrl += 'mdec';
             } else if (source === 'coursera') {
@@ -58,7 +58,7 @@
                 document.getElementById('result').innerText = JSON.stringify(data, null, 2);
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('result').innerText = 'Failed to fetch data.';
+                document.getElementById('result').innerText = 'Failed to fetch data. Please check the server connection or configuration.';
             }
         });
     </script>
