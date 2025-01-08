@@ -62,6 +62,7 @@
   <script type="module">
 
     import { db,auth } from '../firebase-config.js';
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
     const facultyDropdown = document.getElementById("facultyDropdown");
     const courseDropdown = document.getElementById("courseDropdown");
