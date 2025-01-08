@@ -7,24 +7,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, query, where, collection } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { db, auth } from '../firebase-config.js';
-        import { addDoc, collection } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             const accountType = document.getElementById('account-type');
             const institutionContainer = document.getElementById('institution-container');
             const facultyContainer = document.getElementById('faculty-container');
+            const courseContainer = document.getElementById('course-container');
             const companyNameContainer = document.getElementById('company-name-container');
             const institutionSelect = document.getElementById('institution');
             const facultySelect = document.getElementById('faculty');
+            const courseSelect = document.getElementById('course');
 
             // Load institutions for students and lecturers
             await loadInstitutions();
             handleAccountTypeChange();
 
             accountType.addEventListener('change', handleAccountTypeChange);
+            facultySelect.addEventListener('change', loadCourses);
 
             async function loadInstitutions() {
                 institutionSelect.innerHTML = '<option value="">Select Institution</option>';
@@ -37,10 +39,24 @@
                 });
             }
 
+            async function loadCourses() {
+                courseSelect.innerHTML = '<option value="">Select Course</option>';
+                const selectedFaculty = facultySelect.value;
+                const q = query(collection(db, 'Courses'), where('faculty', '==', selectedFaculty));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = doc.data().title;
+                    courseSelect.appendChild(option);
+                });
+            }
+
             function handleAccountTypeChange() {
                 const selectedType = accountType.value;
                 institutionContainer.style.display = selectedType !== 'employer' ? 'block' : 'none';
                 facultyContainer.style.display = selectedType !== 'employer' ? 'block' : 'none';
+                courseContainer.style.display = selectedType === 'student' ? 'block' : 'none';
                 companyNameContainer.style.display = selectedType === 'employer' ? 'block' : 'none';
             }
 
@@ -53,6 +69,7 @@
                 const name = document.getElementById('name').value;
                 const institution = institutionSelect.value;
                 const faculty = facultySelect.value;
+                const course = courseSelect.value;
                 const companyName = document.getElementById('company-name').value;
 
                 try {
@@ -71,6 +88,7 @@
                         userData.studentId = user.uid;
                         userData.institution = institution || null;
                         userData.faculty = faculty || null;
+                        userData.course = course || null;
                     } else if (accountTypeValue === 'lecturer') {
                         userData.institution = institution || null;
                         userData.faculty = faculty || null;
@@ -85,14 +103,6 @@
                 } catch (error) {
                     alert('Error: ' + error.message);
                     console.error('Error: ', error);
-                }
-            });
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    localStorage.setItem('user', JSON.stringify(user));
-                } else {
-                    localStorage.removeItem('user');
                 }
             });
         });
@@ -129,10 +139,16 @@
             <div class="mb-3" id="faculty-container">
                 <label for="faculty" class="form-label">Faculty</label>
                 <select id="faculty" class="form-select">
+                    <option value="">Select course</option>
                     <option value="Faculty of Computer Science">Faculty of Computer Science</option>
                     <option value="Faculty of Medicine">Faculty of Medicine</option>
                     <option value="Faculty of Finance">Faculty of Finance</option>
+
                 </select>
+            </div>
+            <div class="mb-3" id="course-container" style="display:none;">
+                <label for="course" class="form-label">Course</label>
+                <select id="course" class="form-select"></select>
             </div>
             <div class="mb-3" id="company-name-container" style="display:none;">
                 <label for="company-name" class="form-label">Company Name</label>
