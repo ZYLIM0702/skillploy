@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to FW Studio</h1>
+        <h1>Welcome to SkillPloy</h1>
         <div id="auth-container">
             <div id="login-box" class="box">
                 <h2>Login</h2>
@@ -37,19 +37,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 
-        // Your Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBjFLQAyM1F_KCG1Bl2eMJ1zu-h7g5gL8U",
-            authDomain: "skillploy.firebaseapp.com",
-            projectId: "skillploy",
-            storageBucket: "skillploy.firebasestorage.app",
-            messagingSenderId: "234537234700",
-            appId: "1:234537234700:web:450eb6389910ca782d5929"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        import { db,auth } from './firebase-config.js';
 
         // Login function
         window.login = () => {

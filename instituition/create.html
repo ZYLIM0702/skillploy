@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Creation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
+    <style>
+        #module-list {
+            min-height: 150px;
+            border: 2px dashed #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .module-item {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center">Create a New Course</h1>
+        <div class="card mt-4">
+            <div class="card-body">
+                <form id="course-form">
+                    <div class="mb-3">
+                        <label for="course-title" class="form-label">Course Title</label>
+                        <input type="text" id="course-title" class="form-control" placeholder="Enter course title" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="faculty" class="form-label">Faculty</label>
+                        <select id="faculty" class="form-select">
+                            <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+                            <option value="Faculty of Medicine">Faculty of Medicine</option>
+                            <option value="Faculty of Finance">Faculty of Finance</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="module-input" class="form-label">Add Modules</label>
+                        <div class="input-group">
+                            <input type="text" id="module-input" class="form-control" placeholder="Enter module name">
+                            <button type="button" id="add-module" class="btn btn-primary">Add</button>
+                        </div>
+                    </div>
+
+                    <div id="module-list" class="mb-3"></div>
+                    <button type="submit" class="btn btn-success">Create Course</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+
+        import { db,auth } from '../firebase-config.js';
+
+        const form = document.getElementById('course-form');
+        const moduleList = document.getElementById('module-list');
+        const addModuleBtn = document.getElementById('add-module');
+        const moduleInput = document.getElementById('module-input');
+
+        let modules = [];
+
+        addModuleBtn.addEventListener('click', () => {
+            const moduleName = moduleInput.value.trim();
+            if (moduleName) {
+                modules.push(moduleName);
+                const moduleItem = document.createElement('div');
+                moduleItem.className = 'module-item';
+                moduleItem.textContent = moduleName;
+                moduleList.appendChild(moduleItem);
+                moduleInput.value = '';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const courseTitle = document.getElementById('course-title').value.trim();
+            const faculty = document.getElementById('faculty').value;
+
+            if (!courseTitle) {
+                alert('Please enter a course title');
+                return;
+            }
+
+            try {
+                await db.collection('Courses').add({
+                    title: courseTitle,
+                    faculty,
+                    modules,
+                });
+                alert('Course created successfully!');
+                form.reset();
+                moduleList.innerHTML = '';
+                modules = [];
+            } catch (error) {
+                console.error('Error adding document: ', error);
+            }
+        });
+    </script>
+</body>
+</html>
