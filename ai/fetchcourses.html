@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trigger FastAPI</title>
+    <title>Trigger Lambda API</title>
 </head>
 <body>
     <h1>Course Search</h1>
@@ -31,39 +31,37 @@
             }
         });
 
-        document.getElementById('trigger').addEventListener('click', () => {
+        document.getElementById('trigger').addEventListener('click', async () => {
             const source = sourceSelect.value;
             const searchTerm = document.getElementById('searchTerm').value;
             
-            let apiUrl = 'http://limfamily.synology.me:1234/'; // Enforce HTTP only
-            if (source === 'mdec') {
-                apiUrl += 'mdec';
-            } else if (source === 'coursera') {
-                apiUrl += `coursera?search=${encodeURIComponent(searchTerm)}`;
-            }
+            let apiUrl = 'https://qj7qk0r2qa.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
+            let requestOptions = {
+                method: 'OPTIONS',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    search_term: searchTerm, 
+                    search_source: source 
+                }),
+                mode: 'cors', // Handle CORS
+            };
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', apiUrl, true);
-            xhr.setRequestHeader('Accept', 'application/json');
-            xhr.setRequestHeader('Cache-Control', 'no-cache'); // Prevent caching
-            xhr.setRequestHeader('Pragma', 'no-cache');
-            xhr.setRequestHeader('Upgrade-Insecure-Requests', '1'); // Request HTTP even if HTTPS is preferred
-            
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        document.getElementById('result').innerText = JSON.stringify(JSON.parse(xhr.responseText), null, 2);
-                    } else {
-                        document.getElementById('result').innerText = 'Failed to fetch data. Please check the server connection or SSL configuration.';
-                    }
+            try {
+                const response = await fetch(apiUrl, requestOptions);
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
                 }
-            };
-            
-            xhr.onerror = function () {
-                document.getElementById('result').innerText = 'Request failed. Check network or server status.';
-            };
-            
-            xhr.send();
+
+                const data = await response.json();
+                const parsedData = JSON.parse(data.body);
+                document.getElementById('result').innerText = JSON.stringify(parsedData, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = 'Failed to fetch data. Check server or CORS settings.';
+            }
         });
     </script>
 </body>
