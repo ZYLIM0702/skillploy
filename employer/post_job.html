@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,10 @@
       margin-top: 10px;
     }
 
-    form input, form textarea, form button, form select {
+    form input,
+    form textarea,
+    form button,
+    form select {
       margin-top: 5px;
       padding: 8px;
       font-size: 1rem;
@@ -80,6 +84,7 @@
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Employer Job Posting Module</h1>
@@ -92,7 +97,7 @@
       <form id="postJobForm">
         <label for="jobTitle">Job Title:</label>
         <input type="text" id="jobTitle" name="jobTitle" required>
-        
+
         <label for="jobDescription">Job Description:</label>
         <textarea id="jobDescription" name="jobDescription" required></textarea>
 
@@ -117,69 +122,43 @@
   <!-- Firebase Scripts -->
   <script>
     // Import Firebase configuration and Firestore modules
-    import { db } from './firebase-config.js';
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { db } from '../firebase-config.js';
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    // Predefined skills by sector
-    const skillsBySector = {
-      "Computer Science": ["Programming", "Machine Learning", "Cybersecurity", "Web Development", "Data Analysis", "Cloud Computing", "Database Management", "Networking", "UI/UX Design", "DevOps"],
-      "Finance": ["Accounting", "Financial Analysis", "Investment Strategies", "Risk Management", "Taxation", "Auditing", "Wealth Management", "Budgeting", "Banking Operations", "Corporate Finance"],
-      "Healthcare": ["Patient Care", "Medical Coding", "Pharmacology", "Health Administration", "Nursing", "Emergency Response", "Surgical Assistance", "Medical Research", "Diagnostics", "Public Health"]
-    };
-
-    // Populate skills based on sector
-    document.getElementById("sector").addEventListener("change", function () {
+    // Populate skills based on selected sector
+    document.getElementById("sector").addEventListener("change", async function () {
       const selectedSector = this.value;
       const skillsContainer = document.getElementById("skillsSection");
       skillsContainer.innerHTML = ""; // Clear previous skills
 
-      if (skillsBySector[selectedSector]) {
-        skillsBySector[selectedSector].forEach(skill => {
-          const skillOption = document.createElement("label");
-          skillOption.innerHTML = `
-            <input type="checkbox" value="${skill}" name="skills">
-            ${skill}
-          `;
-          skillsContainer.appendChild(skillOption);
-        });
-      }
-    });
-
-    // Form Submission Logic
-    document.getElementById("postJobForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      // Get form data
-      const jobTitle = document.getElementById("jobTitle").value;
-      const jobDescription = document.getElementById("jobDescription").value;
-      const sector = document.getElementById("sector").value;
-      const selectedSkills = Array.from(document.querySelectorAll("input[name='skills']:checked")).map(skill => skill.value);
-      const salaryRange = document.getElementById("salaryRange").value;
-
-      // Create job object
-      const job = {
-        title: jobTitle,
-        description: jobDescription,
-        employerId: "EMPLOYER_ID", // Replace with actual employer ID
-        requirements: selectedSkills,
-        applicants: [],
-        sector: sector,
-        salary: salaryRange,
-      };
-
       try {
-        // Insert into Firestore
-        await db.collection("Job").add(job);
-        alert("Job successfully posted!");
-      } catch (error) {
-        console.error("Error posting job: ", error);
-        alert("Error posting job. Please try again.");
-      }
+        // Query Firestore to fetch skills for the selected sector
+        const skillsQuery = query(
+          collection(db, "Skills"),
+          where("sector", "==", selectedSector)
+        );
+        const querySnapshot = await getDocs(skillsQuery);
 
-      // Clear form
-      document.getElementById("postJobForm").reset();
-      document.getElementById("skillsSection").innerHTML = ""; // Clear skills section
+        // Check if any skills are available for the selected sector
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach(doc => {
+            const skill = doc.data().name; // Assuming the skill name is stored in the 'name' field
+            const skillOption = document.createElement("label");
+            skillOption.innerHTML = `
+          <input type="checkbox" value="${skill}" name="skills">
+          ${skill}
+        `;
+            skillsContainer.appendChild(skillOption);
+          });
+        } else {
+          skillsContainer.innerHTML = "<p>No skills found for the selected sector.</p>";
+        }
+      } catch (error) {
+        console.error("Error fetching skills: ", error);
+        skillsContainer.innerHTML = "<p>Error fetching skills. Please try again later.</p>";
+      }
     });
   </script>
 </body>
+
 </html>
