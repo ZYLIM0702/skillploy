@@ -49,9 +49,8 @@
     import { db } from "../firebase-config.js";
     import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    const skillsContainer = document.getElementById('skills-container');
-    const submitButton = document.getElementById('submit-button');
-    const errorMessage = document.getElementById('error-message');
+    // Reference to the 'students' collection in Firebase Firestore
+    const studentRef = doc(db, "students", "4ihhCbDEFVSlVe7OHq5jKKPXtNn2"); // Use actual student ID here
 
     let selectedSkills = [];
 

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .profile-container {
+            width: 60%;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .profile-info {
+            margin-bottom: 20px;
+        }
+
+        .profile-info p {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+
+        .skills-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .skills-list li {
+            font-size: 16px;
+            background-color: #f0f0f0;
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .skills-list li:hover {
+            background-color: #dcdcdc;
+        }
+
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-container div {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <h1>Student Profile</h1>
+    <div class="profile-info">
+        <p><strong>Name:</strong> <span id="name"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <p><strong>Faculty:</strong> <span id="faculty"></span></p>
+        <p><strong>Institution:</strong> <span id="institution"></span></p>
+        <p><strong>Course:</strong> <span id="courseName"></span></p> <!-- Display course name here -->
+    </div>
+
+    <h3>Selected Skills:</h3>
+    <div id="skillsContainer" class="checkbox-container"></div>
+</div>
+
+<!-- Firebase SDK -->
+
+
+<script type="module">
+    import { db } from "../firebase-config.js"; // Firebase config file
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    // Reference to the 'students' collection in Firebase Firestore
+    const studentRef = doc(db, "Students", "4ihhCbDEFVSlVe7OHq5jKKPXtNn2"); // Use actual student ID here
+
+    // Fetch course name based on course ID
+    const fetchCourseName = async (courseId) => {
+        try {
+            const courseRef = doc(db, "Courses", courseId);
+            const courseDoc = await getDoc(courseRef);
+
+            if (courseDoc.exists()) {
+                const courseData = courseDoc.data();
+                document.getElementById('courseName').textContent = courseData.name; // Set the course name
+            } else {
+                console.log('No course data found.');
+            }
+        } catch (error) {
+            console.error('Error fetching course name:', error);
+        }
+    };
+
+    // Fetch skills data from the student's document
+    const fetchSkills = async () => {
+        try {
+            // Get the student's document data
+            const studentDoc = await getDoc(studentRef);
+
+            if (studentDoc.exists()) {
+                const studentData = studentDoc.data();
+
+                // Assuming 'selectedSkills' contains an array of skill IDs
+                const selectedSkills = studentData.selectedSkills || [];
+
+                // Check if there are any skills in the student's selectedSkills array
+                if (selectedSkills.length > 0) {
+                    let skillsNames = [];
+
+                    // Fetch the corresponding skill names for each skill ID
+                    for (const skillId of selectedSkills) {
+                        const skillDoc = await getDoc(doc(db, "Skills", skillId)); // Fetch the skill document
+                        if (skillDoc.exists()) {
+                            const skillData = skillDoc.data();
+                            skillsNames.push(skillData.name); // Add skill name to the array
+                        }
+                    }
+
+                    // Display the skills as comma-separated values
+                    const skillsText = skillsNames.join(', ');
+                    createSkillsItem(skillsText); // Display the skills
+                } else {
+                    const row = document.createElement('div');
+                    row.textContent = 'No skills acquired yet';
+                    skillsContainer.appendChild(row);
+                }
+
+                // Fetch and display course name
+                const courseId = studentData.courseId;
+                fetchCourseName(courseId);
+
+            } else {
+                console.log('No student data found.');
+            }
+        } catch (error) {
+            console.error('Error fetching skills:', error);
+        }
+    };
+
+    // Create and display the skills as a single comma-separated string
+    const createSkillsItem = (skillsText) => {
+        const skillItem = document.createElement('div');
+        skillItem.textContent = skillsText; // Display the comma-separated skills
+
+        skillsContainer.appendChild(skillItem);
+    };
+
+    // Function to populate the profile page with student data
+    const populateProfile = async () => {
+        try {
+            const studentDoc = await getDoc(studentRef);
+
+            if (studentDoc.exists()) {
+                const studentData = studentDoc.data();
+
+                // Set profile data dynamically
+                document.getElementById('name').textContent = studentData.name;
+                document.getElementById('email').textContent = studentData.email;
+                document.getElementById('faculty').textContent = studentData.faculty;
+                document.getElementById('institution').textContent = studentData.institution;
+
+            } else {
+                console.log('No student data found.');
+            }
+        } catch (error) {
+            console.error('Error fetching student data:', error);
+        }
+    };
+
+    // Call the functions to populate the profile and fetch skills
+    populateProfile();
+    fetchSkills();
+</script>
+
+</body>
+</html>
