@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { db, auth } from '../firebase-config.js';
+        import { addDoc, collection } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const accountType = document.getElementById('account-type');
+            const institutionContainer = document.getElementById('institution-container');
+            const facultyContainer = document.getElementById('faculty-container');
+            const companyNameContainer = document.getElementById('company-name-container');
+            const institutionSelect = document.getElementById('institution');
+            const facultySelect = document.getElementById('faculty');
+
+            // Load institutions for students and lecturers
+            await loadInstitutions();
+            handleAccountTypeChange();
+
+            accountType.addEventListener('change', handleAccountTypeChange);
+
+            async function loadInstitutions() {
+                institutionSelect.innerHTML = '<option value="">Select Institution</option>';
+                const querySnapshot = await getDocs(collection(db, 'Institutions'));
+                querySnapshot.forEach((doc) => {
+                    const option = document.createElement('option');
+                    option.value = doc.data().name;
+                    option.textContent = doc.data().name;
+                    institutionSelect.appendChild(option);
+                });
+            }
+
+            function handleAccountTypeChange() {
+                const selectedType = accountType.value;
+                institutionContainer.style.display = selectedType !== 'employer' ? 'block' : 'none';
+                facultyContainer.style.display = selectedType !== 'employer' ? 'block' : 'none';
+                companyNameContainer.style.display = selectedType === 'employer' ? 'block' : 'none';
+            }
+
+            document.getElementById('signup-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const accountTypeValue = accountType.value;
+                const name = document.getElementById('name').value;
+                const institution = institutionSelect.value;
+                const faculty = facultySelect.value;
+                const companyName = document.getElementById('company-name').value;
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    const collectionName = accountTypeValue.charAt(0).toUpperCase() + accountTypeValue.slice(1) + 's';
+                    const userDocRef = doc(db, collectionName, user.uid);
+                    
+                    let userData = {
+                        name: name,
+                        email: email,
+                    };
+
+                    if (accountTypeValue === 'student') {
+                        userData.studentId = user.uid;
+                        userData.institution = institution || null;
+                        userData.faculty = faculty || null;
+                    } else if (accountTypeValue === 'lecturer') {
+                        userData.institution = institution || null;
+                        userData.faculty = faculty || null;
+                    } else if (accountTypeValue === 'employer') {
+                        userData.companyName = companyName || null;
+                    }
+                    
+                    await setDoc(userDocRef, userData);
+
+                    localStorage.setItem('user', JSON.stringify(user));
+                    alert('Account created successfully!');
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                    console.error('Error: ', error);
+                }
+            });
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    localStorage.setItem('user', JSON.stringify(user));
+                } else {
+                    localStorage.removeItem('user');
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Sign Up</h1>
+        <form id="signup-form">
+            <div class="mb-3">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="account-type" class="form-label">Account Type</label>
+                <select id="account-type" class="form-select" required>
+                    <option value="student" selected>Student</option>
+                    <option value="lecturer">Lecturer</option>
+                    <option value="employer">Employer</option>
+                </select>
+            </div>
+            <div class="mb-3" id="institution-container">
+                <label for="institution" class="form-label">Institution</label>
+                <select id="institution" class="form-select"></select>
+            </div>
+            <div class="mb-3" id="faculty-container">
+                <label for="faculty" class="form-label">Faculty</label>
+                <select id="faculty" class="form-select">
+                    <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+                    <option value="Faculty of Medicine">Faculty of Medicine</option>
+                    <option value="Faculty of Finance">Faculty of Finance</option>
+                </select>
+            </div>
+            <div class="mb-3" id="company-name-container" style="display:none;">
+                <label for="company-name" class="form-label">Company Name</label>
+                <input type="text" id="company-name" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+        </form>
+    </div>
+</body>
+</html>

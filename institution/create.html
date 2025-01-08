@@ -22,6 +22,11 @@
             color: #fff;
             margin: 5px 0;
             border-radius: 3px;
+            cursor: grab;
+        }
+
+        .module-item:active {
+            cursor: grabbing;
         }
     </style>
 </head>
@@ -37,12 +42,22 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="description" class="form-label">Course Description</label>
+                        <textarea id="description" class="form-control" placeholder="Enter course description" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="faculty" class="form-label">Faculty</label>
                         <select id="faculty" class="form-select">
                             <option value="Faculty of Computer Science">Faculty of Computer Science</option>
                             <option value="Faculty of Medicine">Faculty of Medicine</option>
                             <option value="Faculty of Finance">Faculty of Finance</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lecturer-id" class="form-label">Lecturer ID</label>
+                        <input type="text" id="lecturer-id" class="form-control" placeholder="Enter lecturer ID">
                     </div>
 
                     <div class="mb-3">
@@ -60,44 +75,75 @@
         </div>
     </div>
 
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"></script>
+
     <script type="module">
-
-        import { db,auth } from '../firebase-config.js';
-
+        import { db } from '../firebase-config.js';
+        import { addDoc, collection } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+    
         const form = document.getElementById('course-form');
         const moduleList = document.getElementById('module-list');
         const addModuleBtn = document.getElementById('add-module');
         const moduleInput = document.getElementById('module-input');
-
+    
         let modules = [];
 
+        let dragSrcEl = null;
+    
         addModuleBtn.addEventListener('click', () => {
             const moduleName = moduleInput.value.trim();
             if (moduleName) {
-                modules.push(moduleName);
                 const moduleItem = document.createElement('div');
                 moduleItem.className = 'module-item';
                 moduleItem.textContent = moduleName;
+                moduleItem.draggable = true;
+
+                moduleItem.addEventListener('dragstart', (e) => {
+                    dragSrcEl = moduleItem;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', '');
+                });
+
+                moduleItem.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                moduleItem.addEventListener('drop', (e) => {
+                    e.stopPropagation();
+                    if (dragSrcEl !== moduleItem) {
+                        moduleList.insertBefore(dragSrcEl, moduleItem);
+                        modules = Array.from(moduleList.children).map(item => item.textContent);
+                    }
+                });
+
                 moduleList.appendChild(moduleItem);
+                modules.push(moduleName);
                 moduleInput.value = '';
             }
         });
-
+    
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const courseTitle = document.getElementById('course-title').value.trim();
             const faculty = document.getElementById('faculty').value;
-
-            if (!courseTitle) {
-                alert('Please enter a course title');
+            const description = document.getElementById('description').value.trim();
+            const lecturerId = document.getElementById('lecturer-id').value.trim();
+    
+            if (!courseTitle || !description) {
+                alert('Please fill in all required fields.');
                 return;
             }
-
+    
             try {
-                await db.collection('Courses').add({
+                await addDoc(collection(db, 'Courses'), {
                     title: courseTitle,
+                    description,
                     faculty,
+                    lecturerId: lecturerId || null,
                     modules,
+                    feedbacks: [],
+                    overallRating: 0
                 });
                 alert('Course created successfully!');
                 form.reset();

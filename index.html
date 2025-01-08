@@ -3,85 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Auth</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Account Information</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { db, auth } from '../firebase-config.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userInfo = document.getElementById('user-info');
+            const logoutButton = document.getElementById('logout-btn');
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const uid = user.uid;
+                    const accountType = localStorage.getItem('accountType');
+                    const collectionName = accountType.charAt(0).toUpperCase() + accountType.slice(1) + 's';
+                    const userDocRef = doc(db, collectionName, uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        userInfo.innerHTML = `
+                            <h2>Welcome, ${data.name}!</h2>
+                            <p>Email: ${data.email}</p>
+                            <p>Account Type: ${accountType}</p>
+                            ${data.institution ? `<p>Institution: ${data.institution}</p>` : ''}
+                            ${data.faculty ? `<p>Faculty: ${data.faculty}</p>` : ''}
+                            ${data.companyName ? `<p>Company Name: ${data.companyName}</p>` : ''}
+                        `;
+                    } else {
+                        userInfo.innerHTML = '<p>Account data not found.</p>';
+                    }
+                    logoutButton.style.display = 'block';
+                } else {
+                    userInfo.innerHTML = '<p>You are not logged in. <a href="signup.html">Sign up here</a>.</p>';
+                    logoutButton.style.display = 'none';
+                }
+            });
+
+            logoutButton.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('accountType');
+                    window.location.href = 'signup.html';
+                }).catch((error) => {
+                    alert('Error logging out: ' + error.message);
+                });
+            });
+        });
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to SkillPloy</h1>
-        <div id="auth-container">
-            <div id="login-box" class="box">
-                <h2>Login</h2>
-                <input type="email" id="login-email" placeholder="Email">
-                <input type="password" id="login-password" placeholder="Password">
-                <button onclick="login()">Login</button>
-            </div>
-
-            <div id="signup-box" class="box">
-                <h2>Sign Up</h2>
-                <input type="email" id="signup-email" placeholder="Email">
-                <input type="password" id="signup-password" placeholder="Password">
-                <button onclick="signup()">Sign Up</button>
-            </div>
-        </div>
-        
-        <div id="logout-container" style="display:none;">
-            <h2>You're Logged In</h2>
-            <button onclick="logout()">Logout</button>
+    <div class="container mt-5">
+        <h1 class="text-center">Account Information</h1>
+        <div id="user-info" class="text-center mt-4"></div>
+        <div class="text-center mt-3">
+            <button id="logout-btn" class="btn btn-danger" style="display:none;">Logout</button>
         </div>
     </div>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Import Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-
-        import { db,auth } from './firebase-config.js';
-
-        // Login function
-        window.login = () => {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    alert('Logged in successfully!');
-                    toggleUI(true);
-                })
-                .catch((error) => {
-                    alert(error.message);
-                });
-        };
-
-        // Sign up function
-        window.signup = () => {
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    alert('Account created!');
-                    toggleUI(true);
-                })
-                .catch((error) => {
-                    alert(error.message);
-                });
-        };
-
-        // Logout function
-        window.logout = () => {
-            signOut(auth).then(() => {
-                alert('Logged out successfully!');
-                toggleUI(false);
-            }).catch((error) => {
-                alert(error.message);
-            });
-        };
-
-        // Toggle UI on login/logout
-        function toggleUI(isLoggedIn) {
-            document.getElementById('auth-container').style.display = isLoggedIn ? 'none' : 'block';
-            document.getElementById('logout-container').style.display = isLoggedIn ? 'block' : 'none';
-        }
-    </script>
 </body>
 </html>
