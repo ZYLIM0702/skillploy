@@ -3,33 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Text Extractor</title>
+    <title>PDF to Questions</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background: #4CAF50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #4CAF50;
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #f4f4f9;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Loading Screen */
+        #loadingScreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            font-size: 1.5rem;
+            padding-top: 30%;
+            z-index: 1000;
+        }
+
+        /* Suggestions Section */
+        #suggestionsContainer {
+            background: #e8f5e9;
+            padding: 1rem;
+            border: 1px solid #c8e6c9;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            main {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Extract Text from PDF</h1>
-    <input type="file" id="pdfFile" accept=".pdf" />
-    <button id="extractTextButton">Extract Text</button>
-    <h3>Extracted Text:</h3>
-    <textarea id="extractedText" rows="15" cols="80" readonly></textarea>
+    <header>
+        <h1>PDF to Questions</h1>
+    </header>
+    <main>
+        <input type="file" id="pdfFile" accept=".pdf" />
 
-    <script type="module">
-        import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js';
+        <h3>Question:</h3>
+        <div id="questionContainer" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
 
-        document.getElementById('extractTextButton').addEventListener('click', async () => {
-            const fileInput = document.getElementById('pdfFile');
-            const extractedTextArea = document.getElementById('extractedText');
+        <h3>Your Answer:</h3>
+        <textarea id="answerInput" rows="4" placeholder="Type your answer here..."></textarea>
 
-            if (fileInput.files.length === 0) {
-                alert('Please select a PDF file first.');
+        <button id="submitAnswerButton">Submit Answer</button>
+
+        <h3>All Answers:</h3>
+        <ul id="answerList"></ul>
+
+        <div id="loadingScreen">Evaluating your answers... Please wait.</div>
+
+        <h3>Total Score:</h3>
+        <div id="scoreContainer" style="font-weight: bold; color: #4CAF50;"></div>
+
+        <h3>Suggestions for Improvement:</h3>
+        <div id="suggestionsContainer"></div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+        const OPENAI_API_KEY = "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"; // Replace with your actual API key
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let answers = []; // To store answers
+
+        document.getElementById('pdfFile').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                alert("Please select a PDF file.");
                 return;
             }
 
-            const file = fileInput.files[0];
+            // Extract text from PDF
             const fileReader = new FileReader();
-
-            fileReader.onload = async (event) => {
-                const typedArray = new Uint8Array(event.target.result);
-                const pdf = await pdfjsLib.getDocument(typedArray).promise;
+            fileReader.onload = async (e) => {
+                const typedArray = new Uint8Array(e.target.result);
+                const pdf = await pdfjsLib.getDocument(typedArray).promise; // Access pdfjsLib here
                 let text = '';
 
                 for (let i = 1; i <= pdf.numPages; i++) {
@@ -38,11 +183,191 @@
                     text += content.items.map(item => item.str).join(' ') + '\n';
                 }
 
-                extractedTextArea.value = text;
+                // Send extracted text to OpenAI
+                questions = await generateQuestions(text);
+                displayNextQuestion();
             };
-
             fileReader.readAsArrayBuffer(file);
         });
+
+        async function generateQuestions(pdfText) {
+            const apiUrl = "https://api.openai.com/v1/chat/completions";
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are an assistant that generates subjective questions based on input text."
+                            },
+                            {
+                                role: "user",
+                                content: `Generate 5 subjective questions related to the following content: ${pdfText}`
+                            }
+                        ],
+                        max_tokens: 500,
+                        temperature: 0.7
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error response from API:", error);
+                    alert("Error fetching questions. Check the console for details.");
+                    return [];
+                }
+
+                const data = await response.json();
+                const questionsText = data.choices[0].message.content;
+                const questionsArray = questionsText.split('\n').map(q => q.trim()).filter(q => q !== '');
+                return questionsArray.slice(0, 5); // Ensure only 5 questions are returned
+            } catch (error) {
+                console.error("Error during API request:", error);
+                alert("An error occurred while contacting the API. Check the console for more details.");
+                return [];
+            }
+        }
+
+        function displayNextQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                alert("You've answered all questions! Proceeding to scoring...");
+                startLoading();
+                submitAnswersForScoring(); // Start the scoring process
+                return;
+            }
+
+            const questionContainer = document.getElementById('questionContainer');
+            questionContainer.textContent = questions[currentQuestionIndex]; // Display the current question
+            document.getElementById('answerInput').value = ''; // Clear previous answer
+
+            // Enable the Submit Answer button only when an answer is entered
+            document.getElementById('submitAnswerButton').disabled = false;
+        }
+
+        document.getElementById('submitAnswerButton').addEventListener('click', () => {
+            const answer = document.getElementById('answerInput').value.trim();
+            if (answer === '') {
+                alert("Please enter an answer before submitting.");
+                return;
+            }
+
+            // Store the answer
+            answers.push(answer);
+
+            // Display the answer in the list
+            const answerList = document.getElementById('answerList');
+            const li = document.createElement('li');
+            li.textContent = `Question ${currentQuestionIndex + 1}: ${answer}`;
+            answerList.appendChild(li);
+
+            // Proceed to the next question
+            currentQuestionIndex++;
+            displayNextQuestion();
+        });
+
+        function startLoading() {
+            // Show loading screen
+            document.getElementById('loadingScreen').style.display = 'block';
+            document.getElementById('submitAnswerButton').disabled = true; // Disable further input
+        }
+
+        async function submitAnswersForScoring() {
+            const apiUrl = "https://api.openai.com/v1/chat/completions";
+            const questionsAndAnswers = questions.map((question, index) => {
+                return `Question: ${question}\nAnswer: ${answers[index]}`;
+            }).join('\n\n');
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are a grading assistant. Grade each answer out of 20 based on the quality and relevance."
+                            },
+                            {
+                                role: "user",
+                                content: `Grade the following answers. Provide a score for each answer out of 20, followed by keyword suggestion of courses to be taken in coursera (etc sql, machine learning keyword):\n${questionsAndAnswers}`
+                            }
+                        ],
+                        max_tokens: 1000,
+                        temperature: 0.7
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error response from API:", error);
+                    alert("Error grading answers. Check the console for details.");
+                    return;
+                }
+
+                const data = await response.json();
+                const scoreData = data.choices[0].message.content;
+
+                // Process scores and suggestions
+                const { scores, totalScore, suggestions } = processScoresAndSuggestions(scoreData);
+                displayScore(scores, totalScore);
+                displaySuggestions(suggestions);
+                stopLoading(); // Hide loading screen after scoring
+            } catch (error) {
+                console.error("Error during scoring:", error);
+                alert("An error occurred while contacting the API for scoring. Check the console for details.");
+                stopLoading(); // Hide loading screen in case of error
+            }
+        }
+
+        function stopLoading() {
+            // Hide the loading screen after scoring
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('submitAnswerButton').disabled = false; // Enable button again
+        }
+
+        function processScoresAndSuggestions(scoreData) {
+            const scoreLines = scoreData.split('\n');
+            const scores = [];
+            let totalScore = 0;
+            const suggestions = [];
+
+            scoreLines.forEach(line => {
+                if (line.startsWith('Score:')) {
+                    const score = parseInt(line.replace('Score:', '').trim(), 10);
+                    scores.push(score);
+                    totalScore += score;
+                } else if (line.startsWith('Feedback:')) {
+                    suggestions.push(line.replace('Feedback:', '').trim());
+                }
+            });
+
+            return { scores, totalScore, suggestions };
+        }
+
+        function displayScore(scores, totalScore) {
+            const scoreContainer = document.getElementById('scoreContainer');
+            scoreContainer.textContent = `Scores: ${scores.join(', ')}\nTotal Score: ${totalScore}`;
+        }
+
+        function displaySuggestions(suggestions) {
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            suggestionsContainer.innerHTML = suggestions.join('<br>');
+        }
+    </script>
     </script>
 </body>
 </html>
+    
+    
+
+
