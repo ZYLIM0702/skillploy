@@ -9,66 +9,56 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
     }
     select, button {
       margin: 10px 0;
       padding: 10px;
-      width: 100%;
-    }
-    .leaderboard {
-      margin-top: 20px;
-    }
-    .leaderboard table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .leaderboard th, .leaderboard td {
-      border: 1px solid #ddd;
-      text-align: left;
-      padding: 8px;
-    }
-    .leaderboard th {
-      background-color: #f4f4f4;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>University Leaderboard</h1>
-    <label for="sector">Choose Sector:</label>
-    <select id="sector">
-      <option value="">-- Select Sector --</option>
-      <option value="finance">Finance</option>
-      <option value="computer-science">Computer Science</option>
-      <option value="healthcare">Healthcare</option>
-    </select>
+  <h1>Leaderboard</h1>
 
-    <label for="course">Choose Course:</label>
-    <select id="course">
-      <option value="">-- Select Course --</option>
-    </select>
+  <!-- Dropdown for Faculty -->
+  <label for="facultyDropdown">Select Faculty:</label>
+  <select id="facultyDropdown">
+    <option value="Faculty of Computer Science">Faculty of Computer Science</option>
+    <option value="Faculty of Medicine">Faculty of Medicine</option>
+    <option value="Faculty of Finance">Faculty of Finance</option>
+  </select>
 
-    <div class="leaderboard">
-      <h2>Leaderboard</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>University</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body">
-          <tr>
-            <td colspan="3">Select a sector and course to view the leaderboard</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <!-- Dropdown for Courses -->
+  <label for="courseDropdown">Select Course:</label>
+  <select id="courseDropdown">
+    <option value="">-- Select a Course --</option>
+  </select>
+
+  <button onclick="loadLeaderboard()">Show Leaderboard</button>
+
+  <!-- Leaderboard Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>University</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboardTable"></tbody>
+  </table>
+
   <script type="module">
 
     import { db,auth } from '../firebase-config.js';
