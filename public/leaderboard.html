@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Selector</title>
+  <title>Leaderboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
     }
     select, button {
       margin: 10px 0;
@@ -17,11 +30,12 @@
   </style>
 </head>
 <body>
-  <h1>Course Selector</h1>
+  <h1>Leaderboard</h1>
 
   <!-- Dropdown for Faculty -->
   <label for="facultyDropdown">Select Faculty:</label>
   <select id="facultyDropdown">
+    <option value="">-- Select a Faculty --</option>
     <option value="Faculty of Computer Science">Faculty of Computer Science</option>
     <option value="Faculty of Medicine">Faculty of Medicine</option>
     <option value="Faculty of Finance">Faculty of Finance</option>
@@ -33,35 +47,99 @@
     <option value="">-- Select a Course --</option>
   </select>
 
+  <button id="loadleaderboard">Show Leaderboard</button>
+
+  <!-- Leaderboard Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>University</th> 
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboardTable"></tbody>
+  </table>
   <script type="module">
     import { db } from "../firebase-config.js";
-    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-
+    import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  
     const facultyDropdown = document.getElementById("facultyDropdown");
     const courseDropdown = document.getElementById("courseDropdown");
-
+    const leaderboardTable = document.getElementById("leaderboardTable");
+    const leaderboardButton = document.getElementById("loadleaderboard");
+  
     // Populate Courses Dropdown Based on Selected Faculty
     facultyDropdown.addEventListener("change", async () => {
       const selectedFaculty = facultyDropdown.value;
       courseDropdown.innerHTML = '<option value="">-- Select a Course --</option>'; // Clear previous options
-
+  
       try {
-        const coursesRef = db.collection("Courses");
+        const coursesRef = collection(db, "Courses");
         const q = query(coursesRef, where("faculty", "==", selectedFaculty));
         const snapshot = await getDocs(q);
-
-        snapshot.forEach(doc => {
+  
+        const uniqueCourses = new Set();
+  
+        snapshot.forEach((doc) => {
           const course = doc.data();
-          courseDropdown.innerHTML += `<option value="${doc.id}">${course.title}</option>`;
+          if (!uniqueCourses.has(course.title)) {
+            uniqueCourses.add(course.title);
+            courseDropdown.innerHTML += `<option value="${doc.id}">${course.title}</option>`;
+          }
         });
-
-        if (snapshot.empty) {
-          console.warn("No courses found for the selected faculty.");
-        }
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
     });
+  
+    // Load Leaderboard
+    leaderboardButton.addEventListener("click", async () => {
+      const selectedCourse = courseDropdown.value;
+      if (!selectedCourse) {
+        alert("Please select a course!");
+        return;
+      }
+  
+      leaderboardTable.innerHTML = ""; // Clear previous leaderboard
+  
+      try {
+        // Query Institutions that include the selected course
+        const institutionsRef = collection(db, "Institutions");
+        const q = query(institutionsRef, where("courses", "array-contains", selectedCourse));
+        const institutionSnapshot = await getDocs(q);
+  
+        const institutionRatings = [];
+  
+        for (const institutionDoc of institutionSnapshot.docs) {
+          const institution = institutionDoc.data();
+          const institutionName = institution.name;
+  
+          // Fetch the course data to get the overallRating
+          const courseDocRef = doc(db, "Courses", selectedCourse);
+          const courseDoc = await getDoc(courseDocRef);
+          if (courseDoc.exists()) {
+            const courseData = courseDoc.data();
+            institutionRatings.push({
+              university: institutionName,
+              score: courseData.overallRating,
+            });
+          }
+        }
+  
+        // Populate Leaderboard Table
+        institutionRatings.forEach(({ university, score }) => {
+          leaderboardTable.innerHTML += `
+            <tr>
+              <td>${university}</td>
+              <td>${score.toFixed(2)}</td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        console.error("Error loading leaderboard:", error);
+      }
+    });
   </script>
+    
 </body>
 </html>
