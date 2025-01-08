@@ -35,25 +35,22 @@
             const source = sourceSelect.value;
             const searchTerm = document.getElementById('searchTerm').value;
             
-            let apiUrl = new URL('http://limfamily.synology.me:1234/'); // Enforce HTTP only
+            let apiUrl = 'http://limfamily.synology.me:1234/'; // Enforce HTTP only
             if (source === 'mdec') {
-                apiUrl.pathname += 'mdec';
+                apiUrl += 'mdec';
             } else if (source === 'coursera') {
-                apiUrl.pathname += 'coursera';
-                apiUrl.searchParams.set('search', searchTerm);
+                apiUrl += `coursera?search=${encodeURIComponent(searchTerm)}`;
             }
 
-            const options = {
-                base: 'http://limfamily.synology.me:1234/',
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            };
-
             try {
-                const response = await fetch(apiUrl, options);
-                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    referrerPolicy: 'unsafe-url', // Prevent fetch from auto-upgrading to HTTPS
+                });
+
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status}`);
                 }
