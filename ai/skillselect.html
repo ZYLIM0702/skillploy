@@ -1,177 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Profile</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Selector</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
 
-        .profile-container {
-            width: 60%;
-            margin: 50px auto;
-            background-color: white;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
+    .skill-box {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: 20px auto;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-        }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
 
-        .profile-info {
-            margin-bottom: 20px;
-        }
+    button:disabled {
+      background-color: gray;
+    }
 
-        .profile-info p {
-            font-size: 18px;
-            margin: 5px 0;
-        }
-
-        .skills-list {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .skills-list li {
-            font-size: 16px;
-            background-color: #f0f0f0;
-            margin: 5px;
-            padding: 5px 10px;
-            border-radius: 4px;
-        }
-
-        .skills-list li:hover {
-            background-color: #dcdcdc;
-        }
-
-        .checkbox-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .checkbox-container div {
-            display: flex;
-            align-items: center;
-        }
-    </style>
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Select Your Top 3 Skills</h1>
+  <div class="skill-box" id="skills-container"></div>
+  <button id="submit-button" disabled>Submit</button>
+  <p class="error" id="error-message"></p>
 
-<div class="profile-container">
-    <h1>Student Profile</h1>
-    <div class="profile-info">
-        <p><strong>Name:</strong> <span id="name"></span></p>
-        <p><strong>Email:</strong> <span id="email"></span></p>
-        <p><strong>Faculty:</strong> <span id="faculty"></span></p>
-        <p><strong>Institution:</strong> <span id="institution"></span></p>
-        <p><strong>Course ID:</strong> <span id="courseId"></span></p>
-        <p><strong>Student ID:</strong> <span id="studentId"></span></p>
-    </div>
-
-    <h3>Selected Skills:</h3>
-    <div id="skillsContainer" class="checkbox-container"></div>
-</div>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"></script>
-
-<script type="module">
-    import { db } from "../firebase-config.js"; // Firebase config file
-    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  <script type="module">
+    import { db } from "../firebase-config.js";
+    import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Reference to the 'students' collection in Firebase Firestore
     const studentRef = doc(db, "students", "4ihhCbDEFVSlVe7OHq5jKKPXtNn2"); // Use actual student ID here
 
-    // Fetch skills data from the 'Skills' collection in Firebase Firestore
-    const fetchSkills = async () => {
-        try {
-            const skillsCollection = collection(db, 'Skills');
-            const snapshot = await getDocs(skillsCollection);
-            
-            if (!snapshot.empty) {
-                snapshot.docs.forEach((doc) => {
-                    const skillData = doc.data();
-                    createCheckbox(skillData.name, doc.id);
-                });
-            } else {
-                const row = document.createElement('div');
-                row.textContent = 'No skills found';
-                skillsContainer.appendChild(row);
-            }
-        } catch (error) {
-            console.error('Error fetching skills:', error);
+    let selectedSkills = [];
+
+    // Fetch skills from Firestore and render them as checkboxes
+const fetchSkills = async () => {
+    try {
+        const skillsCollection = collection(db, 'Skills');
+        const snapshot = await getDocs(skillsCollection);
+        
+        if (!snapshot.empty) {
+            snapshot.docs.forEach((doc) => {
+                const skillData = doc.data();
+                createCheckbox(skillData.name, doc.id);
+            });
+        } else {
+            // Handle case when no skills are found
+            const row = document.createElement('div');
+            row.textContent = 'No skills found';
+            skillsContainer.appendChild(row);
         }
-    };
+    } catch (error) {
+        console.error('Error fetching skills:', error);
+    }
+};
 
-    // Create checkboxes for skills
-    const createCheckbox = (label, value) => {
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.value = value;
-        checkbox.addEventListener('change', handleCheckboxChange);
+// Render checkboxes for skills
+const createCheckbox = (label, value) => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = value;
+    checkbox.addEventListener('change', handleCheckboxChange);
 
-        const labelElement = document.createElement('label');
-        labelElement.textContent = label;
+    const labelElement = document.createElement('label');
+    labelElement.textContent = label;
 
-        const div = document.createElement('div');
-        div.appendChild(checkbox);
-        div.appendChild(labelElement);
+    const div = document.createElement('div');
+    div.appendChild(checkbox);
+    div.appendChild(labelElement);
 
-        skillsContainer.appendChild(div);
-    };
+    skillsContainer.appendChild(div);
+};
 
-    // Function to handle checkbox change (if needed)
-    const handleCheckboxChange = (event) => {
-        const value = event.target.value;
-        console.log(`Skill ${event.target.checked ? 'selected' : 'deselected'}: ${value}`);
-    };
 
-    // Function to populate the profile page with student data
-    const populateProfile = async () => {
-        try {
-            const studentDoc = await getDoc(studentRef);
+    // Handle checkbox changes
+    function handleCheckboxChange(event) {
+      const value = event.target.value;
 
-            if (studentDoc.exists()) {
-                const studentData = studentDoc.data();
-
-                // Set profile data dynamically
-                document.getElementById('name').textContent = studentData.name;
-                document.getElementById('email').textContent = studentData.email;
-                document.getElementById('faculty').textContent = studentData.faculty;
-                document.getElementById('institution').textContent = studentData.institution;
-                document.getElementById('courseId').textContent = studentData.courseId;
-                document.getElementById('studentId').textContent = studentData.studentId;
-
-                // Fetch and display skills dynamically based on selectedSkills
-                const selectedSkills = studentData.selectedSkills || [];
-                selectedSkills.forEach((skillId) => {
-                    const skillCheckbox = document.querySelector(`input[value='${skillId}']`);
-                    if (skillCheckbox) {
-                        skillCheckbox.checked = true; // Preselect the skills based on the student's selectedSkills
-                    }
-                });
-            } else {
-                console.log('No student data found.');
-            }
-        } catch (error) {
-            console.error('Error fetching student data:', error);
+      if (event.target.checked) {
+        if (selectedSkills.length < 3) {
+          selectedSkills.push(value);
+        } else {
+          event.target.checked = false;
+          errorMessage.textContent = 'You can only select up to 3 skills.';
+          setTimeout(() => errorMessage.textContent = '', 3000);
         }
-    };
+      } else {
+        selectedSkills = selectedSkills.filter((skill) => skill !== value);
+      }
 
-    // Call the functions to populate the profile and fetch skills
-    populateProfile();
+      submitButton.disabled = selectedSkills.length === 0;
+    }
+
+    // Submit selected skills to Firestore
+    async function submitSkills() {
+      const studentId = "4ihhCbDEFVSlVe7OHq5jKKPXtNn2"; // Replace with the actual studentId
+
+      try {
+        await collection(db,'Students').doc(studentId).update({
+          selectedSkills: selectedSkills
+        });
+        alert('Skills successfully submitted!');
+        selectedSkills = [];
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        submitButton.disabled = true;
+      } catch (error) {
+        console.error('Error submitting skills:', error);
+      }
+    }
+
+    submitButton.addEventListener('click', submitSkills);
+
+    // Load skills on page load
     fetchSkills();
-</script>
-
+  </script>
 </body>
 </html>
