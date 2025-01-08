@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script type="module">
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { db, auth } from '../firebase-config.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('signin-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const accountType = document.getElementById('account-type').value;
+                
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    const collectionName = accountType.charAt(0).toUpperCase() + accountType.slice(1) + 's';
+                    const userDocRef = doc(db, collectionName, user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        document.cookie = `user=${JSON.stringify(userData)}; path=/; max-age=86400;`;
+                        alert('Successfully signed in!');
+                        // Redirect to dashboard
+                        window.location.href = '/dashboard.html';
+                    } else {
+                        alert('No account found for this user type.');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                    console.error('Error: ', error);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Sign In</h1>
+        <form id="signin-form">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="account-type" class="form-label">Account Type</label>
+                <select id="account-type" class="form-select" required>
+                    <option value="student">Student</option>
+                    <option value="lecturer">Lecturer</option>
+                    <option value="employer">Employer</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>
