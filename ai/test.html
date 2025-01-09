@@ -14,8 +14,18 @@
             color: #333;
         }
 
+
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+            color: #333;
+        }
+
         header {
-            background: #4CAF50;
+            background: #2124b1;
             color: white;
             padding: 1rem;
             text-align: center;
@@ -36,9 +46,20 @@
         }
 
         h3 {
-            color: #4CAF50;
+            color: #2124b1;
             font-size: 1.2rem;
             margin-top: 1.5rem;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 500px;
         }
 
         textarea {
@@ -51,7 +72,7 @@
         }
 
         button {
-            background: #4CAF50;
+            background: #2124b1;
             color: white;
             border: none;
             padding: 0.8rem 1.2rem;
@@ -61,7 +82,7 @@
         }
 
         button:hover {
-            background: #45a049;
+            background: #2124b1;
         }
 
         ul {
@@ -92,7 +113,27 @@
             padding-top: 30%;
             z-index: 1000;
         }
-    </style>
+
+        /* Suggestions Section */
+        #suggestionsContainer {
+            background: #e8f5e9;
+            padding: 1rem;
+            border: 1px solid #c8e6c9;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            main {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }    </style>
 </head>
 <body>
     <header>
