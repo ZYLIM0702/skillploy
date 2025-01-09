@@ -79,24 +79,24 @@
 
     <div class="content">
         <div id="home-section">
-            <h1 class="mb-4">Dashboard Overview</h1>
+            <h1 class="mb-4">Academic Dashboard Overview</h1>
             <div class="row">
                 <div class="col-md-6 col-lg-4">
                     <div class="dashboard-card">
-                        <h5>Total Jobs Posted</h5>
-                        <h2>24</h2>
+                        <h5>Total Courses Taught</h5>
+                        <h2>8</h2>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="dashboard-card">
-                        <h5>Total Employees</h5>
-                        <h2>520</h2>
+                        <h5>Total Students</h5>
+                        <h2>320</h2>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="dashboard-card">
-                        <h5>Active Applications</h5>
-                        <h2>18</h2>
+                        <h5>Pending Grading</h5>
+                        <h2>15</h2>
                     </div>
                 </div>
             </div>
@@ -104,34 +104,28 @@
             <div class="row mt-5">
                 <div class="col-md-12">
                     <div class="dashboard-card">
-                        <h5>Recent Job Posts</h5>
+                        <h5>Recent Assignments</h5>
                         <table class="table table-striped mt-4">
                             <thead>
                                 <tr>
-                                    <th>Job Title</th>
+                                    <th>Course</th>
+                                    <th>Assignment Title</th>
+                                    <th>Due Date</th>
                                     <th>Status</th>
-                                    <th>Applicants</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Data Scientist</td>
+                                    <td>Introduction to AI</td>
+                                    <td>Project Proposal</td>
+                                    <td>15th Jan 2025</td>
                                     <td><span class="badge bg-success">Open</span></td>
-                                    <td>12</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">View</button>
-                                        <button class="btn btn-danger btn-sm">Close</button>
-                                    </td>
                                 </tr>
                                 <tr>
-                                    <td>Senior Cloud Engineer</td>
+                                    <td>Database Systems</td>
+                                    <td>Midterm Report</td>
+                                    <td>12th Jan 2025</td>
                                     <td><span class="badge bg-warning">Pending</span></td>
-                                    <td>6</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">View</button>
-                                        <button class="btn btn-danger btn-sm">Close</button>
-                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -141,15 +135,15 @@
 
             <div class="row mt-5">
                 <div class="col-md-6">
-                    <canvas id="jobsChart"></canvas>
+                    <canvas id="studentsChart"></canvas>
                 </div>
                 <div class="col-md-6">
                     <div class="dashboard-card">
                         <h5>Notifications</h5>
                         <ul>
-                            <li>New applicant for Data Scientist</li>
-                            <li>Review pending for 3 candidates</li>
-                            <li>Job post expiring soon</li>
+                            <li>New submission for AI Project Proposal</li>
+                            <li>Reminder: Grade midterm report</li>
+                            <li>Upcoming: Final Exam Review Session</li>
                         </ul>
                     </div>
                 </div>
@@ -178,14 +172,14 @@
             element.classList.add('active');
         }
 
-        const ctx = document.getElementById('jobsChart').getContext('2d');
+        const ctx = document.getElementById('studentsChart').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['January', 'February', 'March', 'April'],
                 datasets: [{
-                    label: 'Jobs Posted',
-                    data: [10, 20, 30, 20],
+                    label: 'Students Performance (Avg %)',
+                    data: [85, 90, 88, 92],
                     backgroundColor: '#4777F5'
                 }]
             }
