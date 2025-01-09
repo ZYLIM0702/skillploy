@@ -41,17 +41,6 @@
             margin-top: 1.5rem;
         }
 
-        input[type="file"] {
-            display: block;
-            margin: 1rem 0;
-            padding: 0.5rem;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 100%;
-            max-width: 500px;
-        }
-
         textarea {
             width: 100%;
             padding: 0.8rem;
@@ -103,36 +92,13 @@
             padding-top: 30%;
             z-index: 1000;
         }
-
-        /* Suggestions Section */
-        #suggestionsContainer {
-            background: #e8f5e9;
-            padding: 1rem;
-            border: 1px solid #c8e6c9;
-            border-radius: 4px;
-            margin-top: 1rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
-
-            main {
-                margin: 1rem;
-                padding: 1rem;
-            }
-        }
     </style>
 </head>
 <body>
     <header>
-        <h1>PDF to Questions</h1>
+        <h1 id="testHeading">Test</h1>
     </header>
     <main>
-        <input type="file" id="pdfFile" accept=".pdf" />
-
         <h3>Question:</h3>
         <div id="questionContainer" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
 
@@ -148,221 +114,217 @@
 
         <h3>Total Score:</h3>
         <div id="scoreContainer" style="font-weight: bold; color: #4CAF50;"></div>
-
-        <h3>Suggestions for Improvement:</h3>
-        <div id="suggestionsContainer"></div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
-<script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
-    const OPENAI_API = "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"; // Replace with your actual API key
+    <script type="module">
+        import { db } from "../firebase-config.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    let questions = [];
-    let currentQuestionIndex = 0;
-    let answers = []; // To store answers
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+        const OPENAI_API = "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"; // Replace with your actual API key
 
-    document.getElementById('pdfFile').addEventListener('change', async (event) => {
-        const file = event.target.files[0];
-        if (!file) {
-            alert("Please select a PDF file.");
-            return;
-        }
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let answers = []; // To store answers
 
-        // Extract text from PDF
-        const fileReader = new FileReader();
-        fileReader.onload = async (e) => {
-            const typedArray = new Uint8Array(e.target.result);
-            const pdf = await pdfjsLib.getDocument(typedArray).promise; // Access pdfjsLib here
-            let text = '';
+        const studentId = "4ihhCbDEFVSlVe7OHq5jKKPXtNn2";
+        const outputElement = document.getElementById('output');
 
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                text += content.items.map(item => item.str).join(' ') + '\n';
-            }
+        const fetchPDFLinks = async (studentId) => {
+            try {
+                const studentDocRef = doc(db, "Students", studentId);
+                const studentDocSnap = await getDoc(studentDocRef);
 
-            // Send extracted text to OpenAI
-            questions = await generateQuestions(text);
-            displayNextQuestion();
-        };
-        fileReader.readAsArrayBuffer(file);
-    });
+                if (studentDocSnap.exists()) {
+                    const studentData = studentDocSnap.data();
+                    const selectedSkills = studentData.selectedSkills || [];
 
-    async function generateQuestions(pdfText) {
-        const apiUrl = "https://api.openai.com/v1/chat/completions";
-        try {
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API}`,
-                },
-                body: JSON.stringify({
-                    model: "gpt-4",
-                    messages: [
-                        {
-                            role: "system",
-                            content: "You are an assistant that generates subjective questions based on input text."
-                        },
-                        {
-                            role: "user",
-                            content: `Generate 5 subjective questions related to the following content: ${pdfText}`
+                    const pdfDictionary = {};
+                    for (const skillId of selectedSkills) {
+                        const skillDocRef = doc(db, "Skills", skillId);
+                        const skillDocSnap = await getDoc(skillDocRef);
+
+                        if (skillDocSnap.exists()) {
+                            const skillData = skillDocSnap.data();
+                            const skillName = skillData.name || "Unknown Skill";
+                            const pdfLinks = skillData.ragLinks || [];
+                            pdfDictionary[skillName] = pdfLinks;
+                        } else {
+                            pdfDictionary[`Skill with ID ${skillId}`] = ["Not found"];
                         }
-                    ],
-                    max_tokens: 500,
-                    temperature: 0.7
-                }),
-            });
+                    }
 
-            if (!response.ok) {
-                const error = await response.json();
-                console.error("Error response from API:", error);
-                alert("Error fetching questions. Check the console for details.");
+                    const firstSkill = Object.keys(pdfDictionary)[0];
+                    const firstPdfLink = pdfDictionary[firstSkill][0];
+                    document.getElementById('testHeading').textContent = `Test for ${firstSkill}`;
+
+                    if (firstPdfLink && firstPdfLink !== "Not found") {
+                        loadPDF(firstPdfLink);
+                    } else {
+                        outputElement.textContent = "No PDFs found for the first skill.";
+                    }
+                } else {
+                    outputElement.textContent = "No student found with this ID.";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                outputElement.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        const loadPDF = async (pdfUrl) => {
+            try {
+                const response = await fetch(pdfUrl);
+                const arrayBuffer = await response.arrayBuffer();
+                const typedArray = new Uint8Array(arrayBuffer);
+                const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+                let text = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    text += content.items.map(item => item.str).join(' ') + '\n';
+                }
+
+                questions = await generateQuestions(text);
+                displayNextQuestion();
+            } catch (error) {
+                console.error("Error loading PDF:", error);
+                alert("Failed to load PDF. Check the console for details.");
+            }
+        };
+
+        async function generateQuestions(pdfText) {
+            const apiUrl = "https://api.openai.com/v1/chat/completions";
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${OPENAI_API}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are an assistant that generates subjective questions based on input text."
+                            },
+                            {
+                                role: "user",
+                                content: `Generate 5 subjective questions related to the following content: ${pdfText}`
+                            }
+                        ],
+                        max_tokens: 500,
+                        temperature: 0.7
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error response from API:", error);
+                    alert("Error fetching questions. Check the console for details.");
+                    return [];
+                }
+
+                const data = await response.json();
+                const questionsText = data.choices[0].message.content;
+                const questionsArray = questionsText.split('\n').map(q => q.trim()).filter(q => q !== '');
+                return questionsArray.slice(0, 5); 
+            } catch (error) {
+                console.error("Error during API request:", error);
+                alert("An error occurred while contacting the API. Check the console for more details.");
                 return [];
             }
-
-            const data = await response.json();
-            const questionsText = data.choices[0].message.content;
-            const questionsArray = questionsText.split('\n').map(q => q.trim()).filter(q => q !== '');
-            return questionsArray.slice(0, 5); // Ensure only 5 questions are returned
-        } catch (error) {
-            console.error("Error during API request:", error);
-            alert("An error occurred while contacting the API. Check the console for more details.");
-            return [];
-        }
-    }
-
-    function displayNextQuestion() {
-        if (currentQuestionIndex >= questions.length) {
-            alert("You've answered all questions! Proceeding to scoring...");
-            startLoading();
-            submitAnswersForScoring(); // Start the scoring process
-            return;
         }
 
-        const questionContainer = document.getElementById('questionContainer');
-        questionContainer.textContent = questions[currentQuestionIndex]; // Display the current question
-        document.getElementById('answerInput').value = ''; // Clear previous answer
-
-        // Enable the Submit Answer button only when an answer is entered
-        document.getElementById('submitAnswerButton').disabled = false;
-    }
-
-    document.getElementById('submitAnswerButton').addEventListener('click', () => {
-        const answer = document.getElementById('answerInput').value.trim();
-        if (answer === '') {
-            alert("Please enter an answer before submitting.");
-            return;
-        }
-
-        // Store the answer
-        answers.push(answer);
-
-        // Display the answer in the list
-        const answerList = document.getElementById('answerList');
-        const li = document.createElement('li');
-        li.textContent = `Question ${currentQuestionIndex + 1}: ${answer}`;
-        answerList.appendChild(li);
-
-        // Proceed to the next question
-        currentQuestionIndex++;
-        displayNextQuestion();
-    });
-
-    function startLoading() {
-        // Show loading screen
-        document.getElementById('loadingScreen').style.display = 'block';
-        document.getElementById('submitAnswerButton').disabled = true; // Disable further input
-    }
-
-    async function submitAnswersForScoring() {
-        const apiUrl = "https://api.openai.com/v1/chat/completions";
-        const questionsAndAnswers = questions.map((question, index) => {
-            return `Question: ${question}\nAnswer: ${answers[index]}`;
-        }).join('\n\n');
-
-        try {
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API}`,
-                },
-                body: JSON.stringify({
-                    model: "gpt-4",
-                    messages: [
-                        {
-                            role: "system",
-                            content: "You are a grading assistant. Grade each answer out of 20 based on the quality and relevance."
-                        },
-                        {
-                            role: "user",
-                            content: `Grade the following answers. Provide a score for each answer out of 20, followed by keyword suggestion of courses to be taken in coursera (etc sql, machine learning keyword):\n${questionsAndAnswers}`
-                        }
-                    ],
-                    max_tokens: 1000,
-                    temperature: 0.7
-                }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                console.error("Error response from API:", error);
-                alert("Error grading answers. Check the console for details.");
+        function displayNextQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                alert("You've answered all questions! Proceeding to scoring...");
+                startLoading();
+                submitAnswersForScoring(); 
                 return;
             }
 
-            const data = await response.json();
-            const scoreData = data.choices[0].message.content;
-
-            // Process scores and suggestions
-            const { scores, totalScore, suggestions } = processScoresAndSuggestions(scoreData);
-            displayScore(scores, totalScore);
-            displaySuggestions(suggestions);
-            stopLoading(); // Hide loading screen after scoring
-        } catch (error) {
-            console.error("Error during scoring:", error);
-            alert("An error occurred while contacting the API for scoring. Check the console for details.");
-            stopLoading(); // Hide loading screen in case of error
+            const questionContainer = document.getElementById('questionContainer');
+            questionContainer.textContent = questions[currentQuestionIndex]; 
+            document.getElementById('answerInput').value = ''; 
+            document.getElementById('submitAnswerButton').disabled = false;
         }
-    }
 
-    function stopLoading() {
-        // Hide the loading screen after scoring
-        document.getElementById('loadingScreen').style.display = 'none';
-        document.getElementById('submitAnswerButton').disabled = false; // Enable button again
-    }
-
-    function processScoresAndSuggestions(scoreData) {
-        const scoreLines = scoreData.split('\n');
-        const scores = [];
-        let totalScore = 0;
-        const suggestions = [];
-
-        scoreLines.forEach(line => {
-            if (line.startsWith('Score:')) {
-                const score = parseInt(line.replace('Score:', '').trim(), 10);
-                scores.push(score);
-                totalScore += score;
-            } else if (line.startsWith('Feedback:')) {
-                suggestions.push(line.replace('Feedback:', '').trim());
+        document.getElementById('submitAnswerButton').addEventListener('click', () => {
+            const answer = document.getElementById('answerInput').value.trim();
+            if (answer === '') {
+                alert("Please enter an answer before submitting!");
+                return;
             }
+
+            answers.push(answer);
+
+            const answerList = document.getElementById('answerList');
+            const li = document.createElement('li');
+            li.textContent = answer;
+            answerList.appendChild(li);
+
+            currentQuestionIndex++;
+            displayNextQuestion();
         });
 
-        return { scores, totalScore, suggestions };
-    }
+        async function submitAnswersForScoring() {
+            const apiUrl = "https://api.openai.com/v1/chat/completions";
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${OPENAI_API}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are an evaluator. Score each answers based on how well they address subjective questions. One answer has full marks of 20. Total marks is 100. Rate individual questions and also show total marks"
+                            },
+                            {
+                                role: "user",
+                                content: `Questions: ${questions.join('\n')} Answers: ${answers.join('\n')}`
+                            }
+                        ],
+                        max_tokens: 500,
+                        temperature: 0.5
+                    }),
+                });
 
-    function displayScore(scores, totalScore) {
-        const scoreContainer = document.getElementById('scoreContainer');
-        scoreContainer.textContent = `Scores: ${scores.join(', ')}\nTotal Score: ${totalScore}`;
-    }
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error("Error response from API:", error);
+                    alert("Error submitting answers for scoring. Check the console for details.");
+                    stopLoading();
+                    return;
+                }
 
-    function displaySuggestions(suggestions) {
-        const suggestionsContainer = document.getElementById('suggestionsContainer');
-        suggestionsContainer.innerHTML = suggestions.join('<br>');
-    }
-</script>
+                const data = await response.json();
+                const scores = data.choices[0].message.content.trim();
+                document.getElementById('scoreContainer').textContent = scores;
+            } catch (error) {
+                console.error("Error submitting answers for scoring:", error);
+                alert("An error occurred while submitting answers for scoring. Check the console for details.");
+            } finally {
+                stopLoading();
+            }
+        }
 
+        function startLoading() {
+            document.getElementById('loadingScreen').style.display = 'block';
+        }
+
+        function stopLoading() {
+            document.getElementById('loadingScreen').style.display = 'none';
+        }
+
+        fetchPDFLinks(studentId);
+    </script>
 </body>
 </html>

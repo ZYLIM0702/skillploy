@@ -165,41 +165,103 @@
             }
         };      
 
-        // Generate suggested modules (mock API call)
-        generateButton.addEventListener('click', async () => {
-            suggestedModulesDiv.innerHTML = '<p>Generating...</p>';
+        // Generate suggested modules based on feedback (Updated Version)
+generateButton.addEventListener('click', async () => {
+    try {
+        suggestedModulesDiv.innerHTML = '<p>Generating...</p>';
 
-            // Mock API URL
-            const apiUrl = 'https://api.example.com/generateModules';
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                body: JSON.stringify({ courseId: courseId }),
-                headers: { 'Content-Type': 'application/json' }
-            });
+        // Collect feedback and prepare OpenAI API request
+        const apiKey = 'your-openai-api-key'; // Replace with your OpenAI API key
 
-            if (response.ok) {
-                const data = await response.json();
-                suggestedModulesDiv.innerHTML = '';
-
-                data.modules.forEach(module => {
-                    const moduleDiv = document.createElement('div');
-                    moduleDiv.className = 'module-item';
-                    moduleDiv.textContent = module;
-                    suggestedModulesDiv.appendChild(moduleDiv);
-                });
-            } else {
-                suggestedModulesDiv.innerHTML = '<p>Error generating modules.</p>';
-            }
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    {
+                        role: 'system',
+                        content: "You are an expert in course module design and improvement."
+                    },
+                    {
+                        role: 'user',
+                        content: `Current course planning: ${JSON.stringify(currentModulesDiv)} Based on the following feedback: "${allComments}", identify weak modules and suggest new modules to replace them. Provide the result as JSON , including the modules to mantain and modules to be replaced, place the modules to be replaced at the most bottom`
+                    }
+                ],
+            }),
         });
 
-        // Fetch suggested courses from API
-        const fetchSuggestedCourses = async () => {
-            const apiUrl = 'https://qj7qk0r2qa.execute-api.ap-southeast-5.amazonaws.com/default/fetchCourses';
-            const response = await fetch(apiUrl);
+        if (response.ok) {
             const data = await response.json();
+            const suggestions = JSON.parse(data.choices[0].message.content); // Parse JSON response
+            const { normalModules, substitutedModules } = suggestions;
 
-            const parsedData = JSON.parse(data.body);
-            parsedData.forEach(course => {
+            suggestedModulesDiv.innerHTML = ''; // Clear the container
+
+            // Display normal modules
+            normalModules.forEach(module => {
+                const moduleDiv = document.createElement('div');
+                moduleDiv.className = 'module-item';
+                moduleDiv.textContent = module;
+                suggestedModulesDiv.appendChild(moduleDiv);
+            });
+
+            // Highlight substituted modules
+            substitutedModules.forEach(module => {
+                const moduleDiv = document.createElement('div');
+                moduleDiv.className = 'module-item';
+                moduleDiv.style.backgroundColor = '#ffcccc'; // Highlight substituted modules
+                moduleDiv.textContent = module;
+                suggestedModulesDiv.appendChild(moduleDiv);
+            });
+        } else {
+            suggestedModulesDiv.innerHTML = '<p>Error generating modules.</p>';
+        }
+    } catch (error) {
+        console.error("Error generating suggested modules:", error);
+        suggestedModulesDiv.innerHTML = '<p>Error generating modules.</p>';
+    }
+});
+
+// Fetch suggested courses based on feedback (Updated Version)
+const fetchSuggestedCourses = async (feedback) => {
+    try {
+        suggestedCoursesDiv.innerHTML = '<p>Fetching...</p>';
+
+        const apiKey = 'your-openai-api-key'; // Replace with your OpenAI API key
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    {
+                        role: 'system',
+                        content: "You are an expert in course design and improvement."
+                    },
+                    {
+                        role: 'user',
+                        content: `Based on the following feedback: "${feedback}", identify weak courses and suggest new ones to substitute them. Provide the result as JSON with 'normalCourses' and 'substitutedCourses'.`
+                    }
+                ],
+            }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const suggestions = JSON.parse(data.choices[0].message.content); // Parse JSON response
+            const { normalCourses, substitutedCourses } = suggestions;
+
+            suggestedCoursesDiv.innerHTML = ''; // Clear the container
+
+            // Display normal courses
+            normalCourses.forEach(course => {
                 const courseCard = document.createElement('div');
                 courseCard.className = 'suggested-card';
                 courseCard.innerHTML = `
@@ -209,7 +271,28 @@
                 `;
                 suggestedCoursesDiv.appendChild(courseCard);
             });
-        };
+
+            // Highlight substituted courses
+            substitutedCourses.forEach(course => {
+                const courseCard = document.createElement('div');
+                courseCard.className = 'suggested-card';
+                courseCard.style.backgroundColor = '#ffcccc'; // Highlight substituted courses
+                courseCard.innerHTML = `
+                    <h5>${course.title}</h5>
+                    <p>${course.description}</p>
+                    <a href="${course.link}" target="_blank" class="btn btn-primary">View Course</a>
+                `;
+                suggestedCoursesDiv.appendChild(courseCard);
+            });
+        } else {
+            suggestedCoursesDiv.innerHTML = '<p>Error fetching suggested courses.</p>';
+        }
+    } catch (error) {
+        console.error("Error fetching suggested courses:", error);
+        suggestedCoursesDiv.innerHTML = '<p>Error fetching suggested courses.</p>';
+    }
+};
+
 
         // Send message to OpenAI API
         const sendMessageToChatbot = async (message) => {
